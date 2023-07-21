@@ -46,16 +46,31 @@ pipeline {
             steps {
                 // Run Odoo Unit Test
                 sh "echo 'Odoo Unit Test'"
-                sh "docker run -d --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
-                script {
-                    dockerImage.withRun("-d --name odoo-setup -p 8069:8069 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --link db:db -u odoo") {
-                        sh """
-                            cd /opt/odoo/unit_test/
-                            bash test_utils.sh
-                        """
+                failFast true
+                parallel {
+                        stage('Run Database') {
+                            steps {
+                                sh "docker run --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
+                            }
+                        }
+                        stage('Run Odoo') {
+                            steps {
+                                sh "docker run --name odoo-setup -p 8069:8069 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --link db:db -u odoo"
+                            }
+                        }
+                        stage('Exec to Odoo') {
+                            steps {
+                                script {
+                                    dockerImage.inside("--name odoo-setup -p 8069:8069") {
+                                        sh """
+                                            cd /opt/odoo/unit_test/
+                                            bash test_utils.sh
+                                        """
+                                    }
+                                }
+                            }
+                        }
                     }
-                    // sh "docker exec -it chat-srv-1 bash"
-                }
             }
         }
 
