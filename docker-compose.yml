@@ -31,8 +31,6 @@ services:
       - srv
     volumes:
       - ./nginx/:/etc/nginx/conf.d/
-    ports:
-      - '80:80'
     tty: true
 
 volumes:

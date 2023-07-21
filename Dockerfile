@@ -11,7 +11,7 @@ RUN pip install --upgrade pip \
 
 RUN chmod +x /entrypoint.sh \
     && chmod +x /opt/odoo/odoo-bin \
-    && mkdir -p /mnt/extra \
+    && mkdir -p /mnt/extras \
     && mkdir -p /opt/odoo/unit_test
 
 ADD ./odoo-ex-file /opt/odoo/unit_test/
