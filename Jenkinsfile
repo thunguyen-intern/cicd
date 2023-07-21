@@ -41,7 +41,6 @@ pipeline {
                 //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
                 // }
                 sh "docker compose build"
-                sh "docker compose -f ./docker-compose.yml up -d"
             }
         }
 
@@ -69,11 +68,13 @@ pipeline {
         stage('Exec to Odoo') {
             steps {
                 script {
-                    docker.image(DOCKER_IMAGE).inside("-u odoo --entrypoint=''") {
-                        sh """
-                            /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
-                        """
-                    }
+                    sh "docker compose up -d"
+                    sh "docker exec cicd-jenkins-srv-1 ./test_utils.sh"
+                    // docker.image(DOCKER_IMAGE).inside("-u odoo --entrypoint=''") {
+                    //     sh """
+                    //         /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
+                    //     """
+                    // }
                 }
             }
         }
