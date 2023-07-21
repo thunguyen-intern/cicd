@@ -21,5 +21,7 @@ EXPOSE 8069 8071 8072
 
 USER odoo
 
+WORKDIR /opt/odoo/unit_test
+
 ENTRYPOINT [ "/opt/odoo/odoo-bin" ]
 CMD ["-c", "/etc/odoo.conf"]
