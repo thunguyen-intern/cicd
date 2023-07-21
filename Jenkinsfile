@@ -68,10 +68,6 @@ pipeline {
                     }
                 }
             }
-            steps {
-                // Run Odoo Unit Test
-                sh "echo 'Odoo Unit Test'"
-            }
         }
 
         stage('Odoo Upgrade Module') {
