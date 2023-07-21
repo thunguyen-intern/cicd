@@ -30,19 +30,19 @@ pipeline {
         //     }
         // }
 
-        stage('Build Odoo Docker Image') {
-            steps {
-                // Build the Docker image
-                checkout scm
-                sh "echo 'Build Odoo Docker Image'"
-                // sh "docker build -t "
-                // script {
-                //     // sh "docker build -t ${DOCKER_IMAGE} ."
-                //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
-                // }
-                sh "docker compose build"
-            }
-        }
+        // stage('Build Odoo Docker Image') {
+        //     steps {
+        //         // Build the Docker image
+        //         checkout scm
+        //         sh "echo 'Build Odoo Docker Image'"
+        //         // sh "docker build -t "
+        //         // script {
+        //         //     // sh "docker build -t ${DOCKER_IMAGE} ."
+        //         //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
+        //         // }
+        //         sh "docker compose build"
+        //     }
+        // }
 
         stage('Login to DockerHub') {
             steps {
@@ -69,7 +69,7 @@ pipeline {
             steps {
                 script {
                     sh "docker compose up -d"
-                    sh "docker exec cicd-jenkins-srv-1 ./test_utils.sh"
+                    sh "docker exec cicd-jenkins-srv-1 /opt/odoo/unit_test/test_utils.sh"
                     // docker.image(DOCKER_IMAGE).inside("-u odoo --entrypoint=''") {
                     //     sh """
                     //         /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
