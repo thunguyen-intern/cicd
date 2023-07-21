@@ -42,7 +42,7 @@ class TestUtils(TestUtilsCommon):
 class TestUtilsInheritance(TestUtilsCommon):
     def test_get_util_static_values(self):
         util_values = {
-            't.a': {'value': 3, 'number': 1},
+            't.a': {'value': 3, 'number': 10},
             't.b': {'value': 5, 'number': 1},
             't.c': {'value': 7, 'number': 2},
             't.d': {'value': 9, 'number': 1},
