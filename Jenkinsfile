@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_CONTAINER = './Dockerfile'
         DOCKER_COMPOSE = 'docker-compose.yml'
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKERHUB_CREDENTIALS = credentials('DockerAccessToken')
         GIT_CREDENTIALS = credentials('1')
         PROJECT_URL = 'git@github.com:thunguyen-intern/unit-test.git'
         // webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
