@@ -58,7 +58,7 @@ pipeline {
                 stage('Exec to Odoo') {
                     steps {
                         script {
-                            dockerImage.inside("--name odoo-setup -p 8069:8069") {
+                            dockerImage.inside("--name odoo-setup -u odoo") {
                                 sh """
                                     cd /opt/odoo/unit_test/
                                     bash test_utils.sh
