@@ -49,7 +49,7 @@ pipeline {
                 script {
                     dockerImage.inside("--name odoo-setup -p 8069:8069 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo -e POSTGRES_DB=db --link db:db --network=odoo'") {
                         sh """
-                            chmod +x /opt/odoo/unit_test/test_utils.sh
+                            sudo chmod +x /opt/odoo/unit_test/test_utils.sh
                             bash /opt/odoo/unit_test/test_utils.sh
                         """
                     }
