@@ -1,6 +1,1 @@
 run.sh
-odoo.conf
-./data
-./nginx
-./odoo-ex-file
-./customized_addons
