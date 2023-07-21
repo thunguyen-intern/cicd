@@ -64,8 +64,7 @@ pipeline {
                         script {
                             dockerImage.inside("--name odoo-setup --link db:db -u odoo") {
                                 sh """
-                                    cd /opt/odoo/unit_test/
-                                    bash test_utils.sh
+                                    python3 /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
                                 """
                             }
                         }
