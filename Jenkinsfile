@@ -68,7 +68,7 @@ pipeline {
                 script {
                     docker.image("hikari141/odoo-setup:${env.BUILD_ID}").inside("-u odoo --entrypoint=''") {
                         sh """
-                            /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 --stop-after-init -i test_base_utils
+                            /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
                         """
                     }
                 }
