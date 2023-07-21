@@ -49,7 +49,8 @@ pipeline {
                 script {
                     dockerImage.inside("--name odoo-setup -p 8069:8069 -e POSTGRES_DB=db --link db:db --network=odoo --entrypoint='/opt/odoo/odoo-bin -c /etc/odoo.conf'") {
                         sh """
-                            bash /opt/odoo/unit_test/test_utils.sh
+                            cd /opt/odoo/unit_test/
+                            bash test_utils.sh
                         """
                     }
                     // sh "docker exec -it chat-srv-1 bash"
