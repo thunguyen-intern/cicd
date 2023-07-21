@@ -47,7 +47,7 @@ pipeline {
                 // Run Odoo Unit Test
                 sh "echo 'Odoo Unit Test'"
                 script {
-                    dockerImage.inside("--name odoo-setup -p 8069:8069 --entrypoint='/opt/odoo/odoo-bin -c /etc/odoo.conf'") {
+                    dockerImage.inside("--name odoo-setup -p 8069:8069") {
                         sh """
                             cd /opt/odoo/unit_test/
                             bash test_utils.sh
