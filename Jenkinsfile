@@ -16,7 +16,7 @@ pipeline {
                 script {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    sh "python3 notification.py start ${BUILD_TAG} ${Author_ID}"
+                    // sh "python3 notification.py start ${BUILD_TAG} ${Author_ID}"
                 }
             }
         }
@@ -39,24 +39,6 @@ pipeline {
                     // sh "docker build -t ${DOCKER_IMAGE} ."
                     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
                 }
-            }
-        }
-
-        stage('Create Unit Test repo') {
-            steps {
-                checkout([
-                    $class: 'GitSCM', 
-                    branches: [[name: '*/main']], 
-                    doGenerateSubmoduleConfigurations: false, 
-                    extensions: [], 
-                    submoduleCfg: [], 
-                    userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:thunguyen-intern/unit-test.git']]
-                ])
-                // git branch: 'refs/remotes/origin/main',
-                //     credentialsId: 'git',
-                //     url: 'git@github.com:thunguyen-intern/unit-test.git'
-
-                // sh "ls -la"
             }
         }
 
