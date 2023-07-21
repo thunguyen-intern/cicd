@@ -7,6 +7,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         GIT_CREDENTIALS = credentials('1')
         PROJECT_URL = 'git@github.com:thunguyen-intern/unit-test.git'
+        DOCKER_IMAGE = 'hikari141/srv:latest'
         // webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
 
@@ -35,10 +36,11 @@ pipeline {
                 checkout scm
                 sh "echo 'Build Odoo Docker Image'"
                 // sh "docker build -t "
-                script {
-                    // sh "docker build -t ${DOCKER_IMAGE} ."
-                    dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
-                }
+                // script {
+                //     // sh "docker build -t ${DOCKER_IMAGE} ."
+                //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
+                // }
+                sh "docker compose build"
             }
         }
 
@@ -66,7 +68,7 @@ pipeline {
         stage('Exec to Odoo') {
             steps {
                 script {
-                    docker.image("hikari141/odoo-setup:${env.BUILD_ID}").inside("-u odoo -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --entrypoint=''") {
+                    docker.image(DOCKER_IMAGE).inside("-u odoo -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --entrypoint=''") {
                         sh """
                             /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
                         """

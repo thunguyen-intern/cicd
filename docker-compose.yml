@@ -1,0 +1,40 @@
+version: "3"
+services:
+  db:
+    hostname: db
+    image: postgres:13
+    ports:
+      - '5555:5432'
+    volumes:
+      - ./data/:/docker-entrypoint-initdb.d/
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    tty: true
+    restart: always
+  srv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hikari141/srv:latest
+    depends_on:
+      - db
+    restart: always
+    volumes:
+      - odoo_data:/opt/odoo/.local/share/Odoo
+      - ./odoo-ex-file/:/mnt/extras/
+    tty: true
+  proxy:
+    image: nginx
+    depends_on:
+      - srv
+    volumes:
+      - ./nginx/:/etc/nginx/conf.d/
+    ports:
+      - '80:80'
+    tty: true
+
+volumes:
+  odoo_data:
+  postgres_data:
