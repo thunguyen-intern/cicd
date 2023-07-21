@@ -36,7 +36,8 @@ pipeline {
                 sh "echo 'Build Odoo Docker Image'"
                 // sh "docker build -t "
                 script {
-                    dockerImage = docker.build("odoo-setup:${env.BUILD_ID}")
+                    // sh "docker build -t ${DOCKER_IMAGE} ."
+                    dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
                 }
             }
         }
