@@ -51,23 +51,25 @@ pipeline {
             }
         }
 
-        stage('Odoo Unit Test') {
-            failFast true
-            parallel {
-                stage('Run Database') {
-                    steps {
-                        sh "docker run -d --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
-                    }
-                }
-                stage('Exec to Odoo') {
-                    steps {
-                        script {
-                            dockerImage.inside("--name odoo-setup --link db:db -u odoo") {
-                                sh """
-                                    python3 /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
-                                """
-                            }
-                        }
+        // stage('Odoo Unit Test') {
+        //     failFast true
+        //     parallel {
+        //         stage('Run Database') {
+        //             steps {
+        //                 sh "docker run -d --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
+        //             }
+        //         }
+                
+        //     }
+        // }
+
+        stage('Exec to Odoo') {
+            steps {
+                script {
+                    dockerImage.inside("--name odoo-setup -u odoo") {
+                        sh """
+                            python3 /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
+                        """
                     }
                 }
             }
