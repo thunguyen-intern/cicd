@@ -47,7 +47,7 @@ pipeline {
                 // Run Odoo Unit Test
                 sh "echo 'Odoo Unit Test'"
                 script {
-                    dockerImage.inside("--name odoo-setup -p 8069:8069 -u odoo") {
+                    dockerImage.inside("--name odoo-setup -p 8069:8069 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --link db:db -u odoo") {
                         sh """
                             cd /opt/odoo/unit_test/
                             bash test_utils.sh
