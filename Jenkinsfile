@@ -99,7 +99,7 @@ pipeline {
                 // Push odoo docker image
                 
                 sh "echo 'Push Odoo Docker Image'"
-                sh "docker push odoo-setup:${env.BUILD_ID}"
+                sh "docker push hikari141/odoo-setup:${env.BUILD_ID}"
             }
         }
     }
