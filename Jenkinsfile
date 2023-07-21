@@ -41,6 +41,7 @@ pipeline {
                 //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
                 // }
                 sh "docker compose build"
+                sh "docker compose up -d"
             }
         }
 
