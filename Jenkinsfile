@@ -43,11 +43,8 @@ pipeline {
         }
 
         stage('Odoo Unit Test') {
-            steps {
-                // Run Odoo Unit Test
-                sh "echo 'Odoo Unit Test'"
-                failFast true
-                parallel {
+            failFast true
+            parallel {
                         stage('Run Database') {
                             steps {
                                 sh "docker run --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
@@ -71,6 +68,9 @@ pipeline {
                             }
                         }
                     }
+            steps {
+                // Run Odoo Unit Test
+                sh "echo 'Odoo Unit Test'"
             }
         }
 
