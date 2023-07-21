@@ -66,7 +66,7 @@ pipeline {
         stage('Exec to Odoo') {
             steps {
                 script {
-                    docker.image(dockerImage).inside("--name odoo-setup -p 8069:8069 -u odoo --entrypoint=''") {
+                    docker.image("hikari141/odoo-setup:${env.BUILD_ID}").inside("--name odoo-setup -p 8069:8069 -u odoo --entrypoint=''") {
                         sh """
                             /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 --stop-after-init -i test_base_utils
                         """
