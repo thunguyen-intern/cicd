@@ -56,13 +56,13 @@ pipeline {
             parallel {
                 stage('Run Database') {
                     steps {
-                        sh "docker run --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
+                        sh "docker run -d --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
                     }
                 }
                 stage('Exec to Odoo') {
                     steps {
                         script {
-                            dockerImage.inside("--name odoo-setup -p 8069:8069 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db --link db:db -u odoo") {
+                            dockerImage.inside("--name odoo-setup --link db:db -u odoo") {
                                 sh """
                                     cd /opt/odoo/unit_test/
                                     bash test_utils.sh
