@@ -23,7 +23,7 @@ services:
     restart: always
     volumes:
       - odoo_data:/opt/odoo/.local/share/Odoo
-      - ./odoo-ex-file/:/mnt/extras/
+      - ./odoo-ex-file/:/opt/odoo/unit_test
     tty: true
   proxy:
     image: nginx
