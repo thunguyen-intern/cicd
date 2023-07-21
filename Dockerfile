@@ -11,17 +11,12 @@ RUN pip install --upgrade pip \
 
 RUN chmod +x /entrypoint.sh \
     && chmod +x /opt/odoo/odoo-bin \
-    && mkdir -p /mnt/extras \
-    && mkdir -p /opt/odoo/unit_test
-
-ADD ./odoo-ex-file /opt/odoo/unit_test/
-RUN chmod 755 /opt/odoo/unit_test
+    && mkdir -p /mnt/extras
 
 EXPOSE 8069 8071 8072
 
 USER odoo
 
-WORKDIR /opt/odoo/unit_test
 
 ENTRYPOINT []
 # CMD ["-c", "/etc/odoo.conf"]

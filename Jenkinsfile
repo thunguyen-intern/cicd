@@ -67,14 +67,10 @@ pipeline {
 
         stage('Exec to Odoo') {
             steps {
+                echo "--------------------------------------------------------------------------"
                 script {
                     sh "docker compose up -d"
-                    sh "docker exec cicd-jenkins-srv-1 /opt/odoo/unit_test/test_utils.sh"
-                    // docker.image(DOCKER_IMAGE).inside("-u odoo --entrypoint=''") {
-                    //     sh """
-                    //         /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
-                    //     """
-                    // }
+                    sh "docker exec cicd-jenkins-srv-1 /mnt/extras/test_utils.sh"
                 }
             }
         }
@@ -91,14 +87,14 @@ pipeline {
         //     }
         // }
 
-        // stage('Push Odoo Docker Image') {
-        //     steps {
-        //         // Push odoo docker image
+        stage('Push Odoo Docker Image') {
+            steps {
+                // Push odoo docker image
                 
-        //         sh "echo 'Push Odoo Docker Image'"
-        //         sh "docker push hikari141/odoo-setup:${env.BUILD_ID}"
-        //     }
-        // }
+                sh "echo 'Push Odoo Docker Image'"
+                sh "docker compose push"
+            }
+        }
     }
 
     // post {
