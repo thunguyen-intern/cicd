@@ -23,5 +23,5 @@ USER odoo
 
 WORKDIR /opt/odoo/unit_test
 
-ENTRYPOINT [ "/opt/odoo/odoo-bin" ]
-CMD ["-c", "/etc/odoo.conf"]
+ENTRYPOINT []
+# CMD ["-c", "/etc/odoo.conf"]
