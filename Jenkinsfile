@@ -70,7 +70,7 @@ pipeline {
                 echo "--------------------------------------------------------------------------"
                 script {
                     sh "docker compose up -d"
-                    sh "docker exec cicd-jenkins-srv-1 /mnt/extras/test_utils.sh"
+                    sh "docker exec cicd-srv-1 /mnt/extras/test_utils.sh"
                 }
             }
         }
