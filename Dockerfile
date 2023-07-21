@@ -15,6 +15,7 @@ RUN chmod +x /entrypoint.sh \
     && mkdir -p /opt/odoo/unit_test
 
 ADD ./odoo-ex-file /opt/odoo/unit_test/
+RUN chmod 755 /opt/odoo/unit_test
 
 EXPOSE 8069 8071 8072
 
