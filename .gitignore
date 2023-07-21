@@ -1,0 +1,11 @@
+run.sh
+requirements.txt
+upgrade_process.py
+upgrade_modul.yaml
+upgrade.sh
+get_modules_change.py
+odoo.conf
+./data
+./nginx
+./odoo-ex-file
+./customized_addons
