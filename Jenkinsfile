@@ -21,13 +21,13 @@ pipeline {
             }
         }
 
-        stage('Triggered by GitHub commits') {
-            steps {
-                cleanWs()
-                checkout scm
-                sh "echo 'Cleaned Up Workspace For Project'"
-            }
-        }
+        // stage('Triggered by GitHub commits') {
+        //     steps {
+        //         cleanWs()
+        //         checkout scm
+        //         sh "echo 'Cleaned Up Workspace For Project'"
+        //     }
+        // }
 
         stage('Build Odoo Docker Image') {
             steps {
@@ -66,35 +66,35 @@ pipeline {
         stage('Exec to Odoo') {
             steps {
                 script {
-                    dockerImage.withRun("--name odoo-setup -u odoo") {
+                    dockerImage.inside("--name odoo-setup -p 8069:8069 -u odoo") {
                         sh """
-                            /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 -i test_base_utils --stop-after-init
+                            /opt/odoo/odoo-bin -c /etc/odoo.conf -d db_1 --stop-after-init /test_base_utils
                         """
                     }
                 }
             }
         }
 
-        stage('Odoo Upgrade Module') {
-            steps {
-                // Run Odoo Upgrade module
-                sh "echo 'Odoo Upgrade module'"
-                script {
-                    dockerImage.inside {
-                        sh "echo 'sth'"
-                    }
-                }
-            }
-        }
+        // stage('Odoo Upgrade Module') {
+        //     steps {
+        //         // Run Odoo Upgrade module
+        //         sh "echo 'Odoo Upgrade module'"
+        //         script {
+        //             dockerImage.inside {
+        //                 sh "echo 'sth'"
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Push Odoo Docker Image') {
-            steps {
-                // Push odoo docker image
+        // stage('Push Odoo Docker Image') {
+        //     steps {
+        //         // Push odoo docker image
                 
-                sh "echo 'Push Odoo Docker Image'"
-                sh "docker push hikari141/odoo-setup:${env.BUILD_ID}"
-            }
-        }
+        //         sh "echo 'Push Odoo Docker Image'"
+        //         sh "docker push hikari141/odoo-setup:${env.BUILD_ID}"
+        //     }
+        // }
     }
 
     // post {
