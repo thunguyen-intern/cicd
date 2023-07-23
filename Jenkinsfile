@@ -36,14 +36,14 @@ pipeline {
             }
         }
 
-        stage('Build Odoo Docker Image') {
-            steps {
-                // Build the Docker image
-                checkout scm
-                sh "echo 'Build Odoo Docker Image'"
-                sh "docker compose build"
-            }
-        }
+        // stage('Build Odoo Docker Image') {
+        //     steps {
+        //         // Build the Docker image
+        //         checkout scm
+        //         sh "echo 'Build Odoo Docker Image'"
+        //         sh "docker compose build"
+        //     }
+        // }
 
         stage('Login to DockerHub') {
             steps {
@@ -70,7 +70,7 @@ pipeline {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
-                    sh "docker compose up -d"
+                    sh "docker compose up --build -d"
                     sh "docker exec cicd-srv-1 /mnt/extras/test_utils.sh"
                 }
             }
