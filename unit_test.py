@@ -1,5 +1,4 @@
 import os, ast
-import sys
 # from test_base_utils.__manifest__ import manifest
 
 class CodeGenerator:
@@ -9,6 +8,8 @@ class CodeGenerator:
         self.bin_path = "/opt/odoo/odoo-bin"
         self.conf_path = "/etc/odoo.conf"
         self.mod_path = "modules.txt"
+        self.rootDir = "./odoo-ex-file"
+        # self.index = 0
     
     def check_path(self, fpath):
         return os.path.isfile(fpath)
@@ -18,33 +19,38 @@ class CodeGenerator:
         code = self.genCode()
         f.write(code)
         f.close()
-
-    # def find_tagged(self, fpath):
-    #     with open(fpath, "r") as f:
-    #         for line in f:
-    #             stripped_line = line.strip()
-    #             if stripped_line.startswith('@tagged'):
-    #                 args_line = stripped_line.replace('@tagged', '').strip()
-    #                 args_list = ast.literal_eval(args_line)
-    #                 return args_list
     
     def check_module(self, fpath):
+        with open(fpath, "w") as f:
+            for entry in os.scandir(self.rootDir):
+                if entry.is_dir():
+                    f.write(entry.name + '\n')
+        
         with open(fpath, "r") as f:
             return [modules.strip() for modules in f]
 
     def genCode(self):
         modules_list = self.check_module(self.mod_path)
         code = "#!/bin/bash \n \n" + self.bin_path + " -c " + self.conf_path
+        # Load module
         # First argument from input: database name
         code += " -d " + "abc"
         # Modules
         if len(modules_list) > 0:
             code += " -i "
             code += ','.join(modules_list)
-
+        code += " --stop-after-init \n"
+        # Test module
+        code += self.bin_path + " -c " + self.conf_path
+        code += " -d " + "abc"
+        # Modules
+        if len(modules_list) > 0:
+            code += " --test-tag "
+            code += "/"
+            code += ',/'.join(modules_list)
         code += " --stop-after-init"
         return code
-    
+
 if __name__ == "__main__":
     code = CodeGenerator()
     code.run()

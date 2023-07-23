@@ -2,11 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CONTAINER = './Dockerfile'
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        GIT_CREDENTIALS = credentials('1')
-        PROJECT_URL = 'git@github.com:thunguyen-intern/unit-test.git'
         DOCKER_IMAGE = 'hikari141/srv:latest'
         // webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
@@ -22,27 +19,31 @@ pipeline {
             }
         }
 
-        // stage('Triggered by GitHub commits') {
-        //     steps {
-        //         cleanWs()
-        //         checkout scm
-        //         sh "echo 'Cleaned Up Workspace For Project'"
-        //     }
-        // }
+        stage('Triggered by GitHub commits') {
+            steps {
+                cleanWs()
+                checkout scm
+                sh "echo 'Cleaned Up Workspace For Project'"
+            }
+        }
 
-        // stage('Build Odoo Docker Image') {
-        //     steps {
-        //         // Build the Docker image
-        //         checkout scm
-        //         sh "echo 'Build Odoo Docker Image'"
-        //         // sh "docker build -t "
-        //         // script {
-        //         //     // sh "docker build -t ${DOCKER_IMAGE} ."
-        //         //     dockerImage = docker.build("hikari141/odoo-setup:${env.BUILD_ID}")
-        //         // }
-        //         sh "docker compose build"
-        //     }
-        // }
+        stage('Generate Odoo commands for Unit test') {
+            steps {
+                echo "Generate Odoo commands for Unit test"
+                script {
+                    sh "python3 unit_test.py && mv test_utils.sh ./odoo-ex-file"
+                }
+            }
+        }
+
+        stage('Build Odoo Docker Image') {
+            steps {
+                // Build the Docker image
+                checkout scm
+                sh "echo 'Build Odoo Docker Image'"
+                sh "docker compose build"
+            }
+        }
 
         stage('Login to DockerHub') {
             steps {
@@ -65,7 +66,7 @@ pipeline {
         //     }
         // }
 
-        stage('Exec to Odoo') {
+        stage('Odoo Unit Test') {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
