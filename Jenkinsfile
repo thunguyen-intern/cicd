@@ -36,15 +36,6 @@ pipeline {
             }
         }
 
-        // stage('Build Odoo Docker Image') {
-        //     steps {
-        //         // Build the Docker image
-        //         checkout scm
-        //         sh "echo 'Build Odoo Docker Image'"
-        //         sh "docker compose build"
-        //     }
-        // }
-
         stage('Login to DockerHub') {
             steps {
                 script {
@@ -53,18 +44,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Odoo Unit Test') {
-        //     failFast true
-        //     parallel {
-        //         stage('Run Database') {
-        //             steps {
-        //                 sh "docker run -d --name db -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=novobi -e POSTGRES_DB=db -t postgres:13"
-        //             }
-        //         }
-                
-        //     }
-        // }
 
         stage('Odoo Unit Test') {
             steps {
@@ -75,18 +54,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Odoo Upgrade Module') {
-        //     steps {
-        //         // Run Odoo Upgrade module
-        //         sh "echo 'Odoo Upgrade module'"
-        //         script {
-        //             dockerImage.inside {
-        //                 sh "echo 'sth'"
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Push Odoo Docker Image') {
             steps {
