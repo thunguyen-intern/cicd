@@ -49,7 +49,7 @@ pipeline {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
-                    sh "docker compose up --build -d"
+                    sh "docker compose up -d"
                     sh "docker exec -it cicd-srv-1 ls /mnt/extras"
                 }
             }
