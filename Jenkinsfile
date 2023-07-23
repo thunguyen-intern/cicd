@@ -27,14 +27,14 @@ pipeline {
             }
         }
 
-        stage('Generate Odoo commands for Unit test') {
-            steps {
-                echo "Generate Odoo commands for Unit test"
-                script {
-                    sh "python3 unit_test.py && mv test_utils.sh ./odoo-ex-file && chmod +x test_utils.sh"
-                }
-            }
-        }
+        // stage('Generate Odoo commands for Unit test') {
+        //     steps {
+        //         echo "Generate Odoo commands for Unit test"
+        //         script {
+        //             sh "python3 unit_test.py && mv test_utils.sh ./odoo-ex-file && chmod +x test_utils.sh"
+        //         }
+        //     }
+        // }
 
         stage('Login to DockerHub') {
             steps {
