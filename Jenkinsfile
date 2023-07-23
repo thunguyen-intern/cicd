@@ -31,7 +31,7 @@ pipeline {
             steps {
                 echo "Generate Odoo commands for Unit test"
                 script {
-                    sh "python3 unit_test.py && mv test_utils.sh ./odoo-ex-file"
+                    sh "python3 unit_test.py && mv test_utils.sh ./odoo-ex-file && chmod +x test_utils.sh"
                 }
             }
         }
@@ -50,7 +50,7 @@ pipeline {
                 echo "--------------------------------------------------------------------------"
                 script {
                     sh "docker compose up --build -d"
-                    sh "docker exec cicd-srv-1 /mnt/extras/test_utils.sh"
+                    sh "docker exec -it cicd-srv-1 ls /mnt/extras"
                 }
             }
         }
