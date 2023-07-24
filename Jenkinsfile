@@ -134,14 +134,14 @@ pipeline {
             steps {
                 echo "Odoo Upgrade Module"
                 script {
-                    def missing_modules=sh(script: """python3 upgrade_process.py""", returnStdout: true).trim()
-                    if (missing_modules.isEmpty()) {
-                        echo "true"
-                    }
-                    else {
-                        sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
-                        input "Do you want to continue and ignore missing modules?"
-                    }
+                    // def missing_modules=sh(script: 'python3 upgrade_process.py', returnStdout: true).trim()
+                    // if (missing_modules.isEmpty()) {
+                    //     echo "true"
+                    // }
+                    // else {
+                    //     sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
+                    //     input "Do you want to continue and ignore missing modules?"
+                    // }
                     sh 'docker exec cicd-srv-1 /mnt/extras/upgrade.sh'
                 }
             }
