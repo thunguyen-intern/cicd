@@ -112,18 +112,12 @@ pipeline {
                 echo "Odoo Unit Test"
                 script {
                     docker.image(DOCKER_IMAGE).inside {
-                        stage("Exec to container") {
-                            steps {
-                                script {
-                                    def exitCode = sh(script: '/mnt/extras/test_utils.sh', returnStatus: true)
-                                    if (exitCode != 0) {
-                                        env.TEST_STATUS = 'FAIL'
-                                    } 
-                                    else {
-                                        env.TEST_STATUS = 'PASS'
-                                    }
-                                }
-                            }
+                        def exitCode = sh(script: '/mnt/extras/test_utils.sh', returnStatus: true)
+                        if (exitCode != 0) {
+                            env.TEST_STATUS = 'FAIL'
+                        } 
+                        else {
+                            env.TEST_STATUS = 'PASS'
                         }
                     }
                 }
