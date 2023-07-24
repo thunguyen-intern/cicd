@@ -112,14 +112,14 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    def exitCode = sh(script: 'docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh', returnStatus: true)
+                    def exitCode = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh", returnStatus: true)
                     // if (exitCode != 0) {
                     //     env.TEST_STATUS = '--------------------- FAIL ---------------------'
                     // } 
                     // else {
                     //     env.TEST_STATUS = '--------------------- PASS ---------------------'
                     // }
-                    echo "Test result: ${testResult}"
+                    echo "Test result: ${exitCode}"
                     // print(env.TEST_STATUS)
                 }
             }    
@@ -137,7 +137,7 @@ pipeline {
             steps {
                 echo "Odoo Upgrade Module"
                 script {
-                    def missing_modules=sh(script: 'python3 upgrade_process.py', returnStdout: true).trim()
+                    def missing_modules=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
                     if (missing_modules.isEmpty()) {
                         echo "true"
                     }
