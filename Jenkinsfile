@@ -109,7 +109,6 @@ pipeline {
 
         stage('Odoo Unit Test') {
             steps {
-                checkout scm
                 echo "Odoo Unit Test"
                 script {
                     docker.image(DOCKER_IMAGE).inside {
