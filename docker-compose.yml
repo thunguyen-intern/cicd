@@ -22,7 +22,7 @@ services:
       - db
     restart: always
     volumes:
-      - ./odoo-ex-file: /mnt/extras/
+      - odoo-ex-file: /mnt/extras/
       - odoo_data:/opt/odoo/.local/share/Odoo
     tty: true
   proxy:
@@ -37,5 +37,5 @@ services:
 
 volumes:
   odoo_data:
-  # odoo-ex-file:
+  odoo-ex-file:
   postgres_data:
