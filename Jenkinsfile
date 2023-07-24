@@ -118,7 +118,7 @@ pipeline {
                     def sumLine = lines.find {
                         it.contains("odoo.tests.runner")
                     }
-                    if (testSummaryLine != null) {
+                    if (sumLine != null) {
                         echo "Test summary: ${sumLine}"
                     }
                     else {
