@@ -47,7 +47,7 @@ pipeline {
 
         stage('Odoo Run docker-compose') {
             steps {
-                echo "--------------------------------------------------------------------------"
+                echo "Odoo Run docker-compose"
                 script {
                     sh 'docker compose down'
                     sh 'docker compose up -d'
@@ -57,7 +57,7 @@ pipeline {
 
         stage('Odoo Unit Test') {
             steps {
-                echo "--------------------------------------------------------------------------"
+                echo "Odoo Unit Test"
                 script {
                     sh 'docker exec cicd-srv-1 chmod +x /mnt/extras/test_utils.sh && /mnt/extras/test_utils.sh'
                 
