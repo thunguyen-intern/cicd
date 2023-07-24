@@ -110,9 +110,18 @@ pipeline {
         stage('Odoo Unit Test') {
             steps {
                 echo "Odoo Unit Test"
-                script {
-                    sh 'docker exec cicd-srv-1 /mnt/extras/test_utils.sh'
-                
+                docker.image(DOCKER_IMAGE).inside {
+                    steps {
+                        script {
+                            def exitCode = sh(script: '/mnt/extras/test_utils.sh', returnStatus: true)
+                            if (exitCode != 0) {
+                                env.TEST_STATUS = 'FAIL'
+                            } 
+                            else {
+                                env.TEST_STATUS = 'PASS'
+                            }
+                        }
+                    }
                 }
             }
 
@@ -138,7 +147,6 @@ pipeline {
                         input "Do you want to continue and ignore missing modules?"
                     }
                     sh 'docker exec cicd-srv-1 /mnt/extras/upgrade.sh'
-                
                 }
             }
 
@@ -151,22 +159,22 @@ pipeline {
             }
         }
 
-        stage('Push Odoo Docker Image') {
-            steps {
-                // Push odoo docker image
+        // stage('Push Odoo Docker Image') {
+        //     steps {
+        //         // Push odoo docker image
                 
-                sh "echo 'Push Odoo Docker Image'"
-                sh "docker compose push"
-            }
+        //         sh "echo 'Push Odoo Docker Image'"
+        //         sh "docker compose push"
+        //     }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
-        }
+        //     post {
+        //         failure {
+        //             script {
+        //                 env.FAILED_STAGE = env.STAGE_NAME
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     post {
