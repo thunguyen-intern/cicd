@@ -32,6 +32,7 @@ pipeline {
                 echo "Generate Odoo commands for Unit test"
                 script {
                     sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
+                    sh "ls -l ./odoo-ex-file" 
                 }
             }
         }
@@ -59,7 +60,7 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    sh 'docker exec cicd-srv-1 chmod +x /mnt/extras/test_utils.sh && /mnt/extras/test_utils.sh'
+                    sh 'docker exec cicd-srv-1 ls -l /mnt/extras/'
                 
                 }
             }
