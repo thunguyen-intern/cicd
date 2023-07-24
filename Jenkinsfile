@@ -44,8 +44,6 @@ pipeline {
                     sh """
                         python3 unit_test.py > ./odoo-ex-file/test_utils.sh
                         chmod +x ./odoo-ex-file/test_utils.sh
-                        touch ./odoo-ex-file/output.txt
-                        chmod +rwx ./odoo-ex-file/output.txt
                     """
                 }
             }
@@ -118,21 +116,20 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 sh -c '/mnt/extras/test_utils.sh > /mnt/extras/output.txt && cat /mnt/extras/output.txt'", returnStdout: true)
-                    // def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 cat ", returnStdout: true)
+                    def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 sh -c 'bash /mnt/extras/test_utils.sh | grep \"odoo.tests.runner\"'", returnStdout: true)
                     println testStr
-                    String outputStr = testStr?.toString().trim()
-                    println outputStr
-                    def lines = outputStr.split('\n')
-                    def sumLine = lines.find {
-                        it.contains("odoo.tests.runner")
-                    }
-                    if (sumLine != null) {
-                        echo "Test summary: ${sumLine}"
-                    }
-                    else {
-                        echo "Failed to find test summary line in output"
-                    }
+                    // String outputStr = testStr?.toString().trim()
+                    // println outputStr
+                    // def lines = outputStr.split('\n')
+                    // def sumLine = lines.find {
+                    //     it.contains("odoo.tests.runner")
+                    // }
+                    // if (sumLine != null) {
+                    //     echo "Test summary: ${sumLine}"
+                    // }
+                    // else {
+                    //     echo "Failed to find test summary line in output"
+                    // }
                 }
             }    
 
