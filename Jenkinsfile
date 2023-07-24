@@ -5,7 +5,7 @@ pipeline {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE = 'hikari141/srv:latest'
-        FAILED_STAGE = ''
+        // FAILED_STAGE = ''
         // webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
 
@@ -27,13 +27,13 @@ pipeline {
                 sh "echo 'Cleaned Up Workspace For Project'"
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Generate Odoo commands for Unit test') {
@@ -45,13 +45,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Generate Odoo commands for Upgrade module') {
@@ -63,13 +63,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Login to DockerHub') {
@@ -80,13 +80,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Odoo Run docker-compose') {
@@ -98,13 +98,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Odoo Unit Test') {
@@ -128,13 +128,13 @@ pipeline {
                 
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Odoo Upgrade Module') {
@@ -153,13 +153,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             env.FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         // stage('Push Odoo Docker Image') {
@@ -180,22 +180,22 @@ pipeline {
         // }
     }
 
-    post {
-        success {
-            script {
-                sh "python3 notification.py success ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
-            }
-        }
-        failure {
-            script {
-                sh "python3 notification.py failure ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
-            }
-        }
+    // post {
+    //     success {
+    //         script {
+    //             sh "python3 notification.py success ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
+    //         }
+    //     }
+    //     failure {
+    //         script {
+    //             sh "python3 notification.py failure ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
+    //         }
+    //     }
 
-        aborted {
-            script {
-                sh "python3 notification.py aborted ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL}"
-            }
-        }
-    }
+    //     aborted {
+    //         script {
+    //             sh "python3 notification.py aborted ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL}"
+    //         }
+    //     }
+    // }
 }
