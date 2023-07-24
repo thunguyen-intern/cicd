@@ -51,8 +51,6 @@ pipeline {
                 script {
                     sh 'docker-compose up -d'
                 }
-                
-                }
             }
         }
 
