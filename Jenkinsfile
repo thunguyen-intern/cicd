@@ -49,6 +49,7 @@ pipeline {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
+                    sh 'docker compose down'
                     sh 'docker compose up -d'
                 }
             }
@@ -58,20 +59,20 @@ pipeline {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
-                    sh 'docker exec cicd-srv-1 ls /mnt/extras/test_utils.sh'
+                    sh 'docker exec cicd-srv-1 /mnt/extras/test_utils.sh'
                 
                 }
             }
         }
 
-        stage('Push Odoo Docker Image') {
-            steps {
-                // Push odoo docker image
+        // stage('Push Odoo Docker Image') {
+        //     steps {
+        //         // Push odoo docker image
                 
-                sh "echo 'Push Odoo Docker Image'"
-                sh "docker compose push"
-            }
-        }
+        //         sh "echo 'Push Odoo Docker Image'"
+        //         sh "docker compose push"
+        //     }
+        // }
     }
 
     // post {
