@@ -112,7 +112,7 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh > /mnt/extras/output.txt"
+                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 touch /mnt/extras/output.txt && /mnt/extras/test_utils.sh > /mnt/extras/output.txt"
                     def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 cat /mnt/extras/output.txt", returnStdout: true)
                     println testStr
                     String outputStr = testStr?.toString().trim()
