@@ -110,7 +110,7 @@ pipeline {
         stage('Odoo Unit Test') {
             steps {
                 echo "Odoo Unit Test"
-                docker.image(DOCKER_IMAGE).inside {
+                docker.build(DOCKER_IMAGE).inside {
                     steps {
                         script {
                             def exitCode = sh(script: '/mnt/extras/test_utils.sh', returnStatus: true)
