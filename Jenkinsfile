@@ -112,15 +112,12 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    def exitCode = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh", returnStatus: true)
-                    // if (exitCode != 0) {
-                    //     env.TEST_STATUS = '--------------------- FAIL ---------------------'
-                    // } 
-                    // else {
-                    //     env.TEST_STATUS = '--------------------- PASS ---------------------'
-                    // }
-                    echo "Test result: ${exitCode}"
-                    // print(env.TEST_STATUS)
+                    def testOutput = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh", returnStatus: true).trim()
+                    def lines = testOutput.split('\n')
+                    def sumLine = lines.find {
+                        it.contains("WARNING")
+                    }
+                    echo "Test summary: ${sumLine}"
                 }
             }    
 
@@ -145,7 +142,7 @@ pipeline {
                         sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
                         input "Do you want to continue and ignore missing modules?"
                     }
-                    sh 'docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh'
+                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh"
                 }
             }
 
