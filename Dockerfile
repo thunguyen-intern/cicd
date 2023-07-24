@@ -22,5 +22,5 @@ EXPOSE 8069 8071 8072
 USER odoo
 
 
-ENTRYPOINT []
+ENTRYPOINT ["/entrypoint.sh"]
 # CMD ["-c", "/etc/odoo.conf"]
