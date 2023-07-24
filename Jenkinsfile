@@ -50,7 +50,7 @@ pipeline {
                 echo "--------------------------------------------------------------------------"
                 script {
                     sh "docker compose up -d"
-                    sh "docker exec -it cicd-srv-1 ls /mnt/extras"
+                    sh "docker exec cicd-srv-1"
                 }
             }
         }
