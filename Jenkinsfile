@@ -5,6 +5,7 @@ pipeline {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE = 'hikari141/srv:latest'
+        DOCKER_IMAGE_NAME = 'srv'
         FAILED_STAGE = ''
         webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
@@ -16,7 +17,6 @@ pipeline {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
                     sh "python3 notification.py start ${BUILD_TAG} ${Author_ID} ${ID}"
-                    print(env.JOB_NAME)
                 }
             }
         }
@@ -112,14 +112,15 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    def exitCode = sh(script: 'docker exec cicd-srv-1 /mnt/extras/test_utils.sh', returnStatus: true)
-                    if (exitCode != 0) {
-                        env.TEST_STATUS = '--------------------- FAIL ---------------------'
-                    } 
-                    else {
-                        env.TEST_STATUS = '--------------------- PASS ---------------------'
-                    }
-                    print(env.TEST_STATUS)
+                    def exitCode = sh(script: 'docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh', returnStatus: true)
+                    // if (exitCode != 0) {
+                    //     env.TEST_STATUS = '--------------------- FAIL ---------------------'
+                    // } 
+                    // else {
+                    //     env.TEST_STATUS = '--------------------- PASS ---------------------'
+                    // }
+                    echo "Test result: ${testResult}"
+                    // print(env.TEST_STATUS)
                 }
             }    
 
@@ -144,7 +145,7 @@ pipeline {
                         sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
                         input "Do you want to continue and ignore missing modules?"
                     }
-                    sh 'docker exec cicd-srv-1 /mnt/extras/upgrade.sh'
+                    sh 'docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh'
                 }
             }
 
