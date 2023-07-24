@@ -37,15 +37,15 @@ pipeline {
             }
         }
 
-        stage('Generate Odoo commands for Upgrade module') {
-            steps {
-                echo "Generate Odoo commands for Upgrade module"
-                script {
-                    sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
-                    sh "chmod 755 ./odoo-ex-file/test_utils.sh"
-                }
-            }
-        }
+        // stage('Generate Odoo commands for Upgrade module') {
+        //     steps {
+        //         echo "Generate Odoo commands for Upgrade module"
+        //         script {
+        //             sh "python3 upgrade_process.py > ./odoo-ex-file/upgrade.sh"
+        //             sh "chmod 755 ./odoo-ex-file/upgrade.sh"
+        //         }
+        //     }
+        // }
 
         stage('Login to DockerHub') {
             steps {
@@ -76,6 +76,21 @@ pipeline {
             }
         }
 
+        stage('Odoo Upgrade Module') {
+            steps {
+                script {
+                    def missing_modules=sh(script: """python3 upgrade_process.py""", returnStdout: true).trim()
+                    if (missing_modules.isEmpty()) {
+                        echo "true"
+                    }
+                    else {
+                        sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
+                        input "Do you want to continue and ignore missing modules?"
+                    }
+                }   
+            }
+        }
+
         // stage('Push Odoo Docker Image') {
         //     steps {
         //         // Push odoo docker image
@@ -86,11 +101,11 @@ pipeline {
         // }
     }
 
-    // post {
-    //     always {
-    //         script {
-    //             sh "python3 notification.py ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
-    //         }
-    //     }
-    // }
+    post {
+        always {
+            script {
+                sh "python3 notification.py post ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${ID}"
+            }
+        }
+    }
 }
