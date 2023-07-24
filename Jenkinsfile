@@ -45,7 +45,7 @@ pipeline {
                         python3 unit_test.py > ./odoo-ex-file/test_utils.sh
                         chmod +x ./odoo-ex-file/test_utils.sh
                         touch ./odoo-ex-file/output.txt
-                        chmod +rx ./odoo-ex-file/output.txt
+                        chmod +rwx ./odoo-ex-file/output.txt
                     """
                 }
             }
