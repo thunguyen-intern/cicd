@@ -41,7 +41,7 @@ pipeline {
                 echo "Generate Odoo commands for Unit test"
                 script {
                     sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
-                    sh "chmod 755 ./odoo-ex-file/test_utils.sh"
+                    sh "chmod +x ./odoo-ex-file/test_utils.sh"
                 }
             }
 
@@ -59,7 +59,7 @@ pipeline {
                 echo "Generate Odoo commands for Upgrade module"
                 script {
                     sh "python3 upgrade.py > ./odoo-ex-file/upgrade.sh"
-                    sh "chmod 755 ./odoo-ex-file/upgrade.sh"
+                    sh "chmod +x ./odoo-ex-file/upgrade.sh"
                 }
             }
 
@@ -118,6 +118,7 @@ pipeline {
                     else {
                         env.TEST_STATUS = 'PASS'
                     }
+                    print(env.TEST_STATUS)
                 }
             }    
 
