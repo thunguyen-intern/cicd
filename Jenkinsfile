@@ -138,47 +138,45 @@ pipeline {
             }
         }
 
-        stage('Odoo Upgrade Module') {
-            steps {
-                echo "Odoo Upgrade Module"
-                script {
-                    def missing_modules=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
-                    if (missing_modules.isEmpty()) {
-                        echo "true"
-                    }
-                    else {
-                        sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
-                        input "Do you want to continue and ignore missing modules?"
-                    }
-                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh"
-                }
-            }
+        // stage('Odoo Upgrade Module') {
+        //     steps {
+        //         echo "Odoo Upgrade Module"
+        //         script {
+        //             def missing_modules=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
+        //             if (missing_modules.isEmpty()) {
+        //                 echo "true"
+        //             }
+        //             else {
+        //                 sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
+        //                 input "Do you want to continue and ignore missing modules?"
+        //             }
+        //             sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh"
+        //         }
+        //     }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
-        }
+        //     post {
+        //         failure {
+        //             script {
+        //                 env.FAILED_STAGE = env.STAGE_NAME
+        //             }
+        //         }
+        //     }
+        // }
 
-        stage('Push Odoo Docker Image') {
-            steps {
-                // Push odoo docker image
-                
-                sh "echo 'Push Odoo Docker Image'"
-                sh "docker compose push"
-            }
+        // stage('Push Odoo Docker Image') {
+        //     steps {
+        //         sh "echo 'Push Odoo Docker Image'"
+        //         sh "docker compose push"
+        //     }
 
-            post {
-                failure {
-                    script {
-                        env.FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
-        }
+        //     post {
+        //         failure {
+        //             script {
+        //                 env.FAILED_STAGE = env.STAGE_NAME
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     post {
