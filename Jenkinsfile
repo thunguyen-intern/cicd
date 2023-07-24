@@ -111,7 +111,8 @@ pipeline {
             steps {
                 checkout scm
                 echo "Odoo Unit Test"
-                docker.image(DOCKER_IMAGE).inside {
+                script {
+                    docker.image(DOCKER_IMAGE).inside {
                     steps {
                         script {
                             def exitCode = sh(script: '/mnt/extras/test_utils.sh', returnStatus: true)
@@ -124,6 +125,8 @@ pipeline {
                         }
                     }
                 }
+                }
+                
             }
 
             post {
