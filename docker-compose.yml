@@ -23,7 +23,7 @@ services:
     restart: always
     volumes:
       - type: bind
-        source: cicd-jenkins/odoo-ex-file/
+        source: ./odoo-ex-file/
         target: /mnt/extras/
       - odoo_data:/opt/odoo/.local/share/Odoo
     tty: true
