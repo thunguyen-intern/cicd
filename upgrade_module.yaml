@@ -1,0 +1,31 @@
+1.0.3:
+  time_line: [2020-01-06]
+  upgrade_modules:
+    - module_A
+  install_modules:
+    - module_C
+  database:
+    - database_1
+    - database_2
+  release_notes:
+    - Fix bug
+
+
+1.0.2:
+  time_line: [2020-01-05]
+  upgrade_modules:
+    - module_A
+    - module_B
+  install_modules:
+  database:
+    - database_1
+  release_notes:
+    - Fix bug
+
+1.0.1:
+  time_line: [2020-12-23]
+  upgrade_modules: 
+  install_modules:
+  database: 
+  release_notes:
+    - DevOps Team Apply Upgrade Module

@@ -33,7 +33,16 @@ pipeline {
                 script {
                     sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
                     sh "chmod 755 ./odoo-ex-file/test_utils.sh"
-                    sh "ls -l ./odoo-ex-file" 
+                }
+            }
+        }
+
+        stage('Generate Odoo commands for Upgrade module') {
+            steps {
+                echo "Generate Odoo commands for Upgrade module"
+                script {
+                    sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
+                    sh "chmod 755 ./odoo-ex-file/test_utils.sh"
                 }
             }
         }
