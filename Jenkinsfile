@@ -5,8 +5,8 @@ pipeline {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE = 'hikari141/srv:latest'
-        // FAILED_STAGE = ''
-        // webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
+        FAILED_STAGE = ''
+        webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
 
     stages {
@@ -27,13 +27,13 @@ pipeline {
                 sh "echo 'Cleaned Up Workspace For Project'"
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Generate Odoo commands for Unit test') {
@@ -45,13 +45,13 @@ pipeline {
                 }
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Generate Odoo commands for Upgrade module') {
@@ -63,13 +63,13 @@ pipeline {
                 }
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Login to DockerHub') {
@@ -80,13 +80,13 @@ pipeline {
                 }
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Odoo Run docker-compose') {
@@ -98,13 +98,13 @@ pipeline {
                 }
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Odoo Unit Test') {
@@ -113,83 +113,83 @@ pipeline {
                 script {
                     def exitCode = sh(script: 'docker exec cicd-srv-1 /mnt/extras/test_utils.sh', returnStatus: true)
                     if (exitCode != 0) {
-                        env.TEST_STATUS = 'FAIL'
+                        env.TEST_STATUS = '--------------------- FAIL ---------------------'
                     } 
                     else {
-                        env.TEST_STATUS = 'PASS'
+                        env.TEST_STATUS = '--------------------- PASS ---------------------'
                     }
                     print(env.TEST_STATUS)
                 }
             }    
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
         stage('Odoo Upgrade Module') {
             steps {
                 echo "Odoo Upgrade Module"
                 script {
-                    // def missing_modules=sh(script: 'python3 upgrade_process.py', returnStdout: true).trim()
-                    // if (missing_modules.isEmpty()) {
-                    //     echo "true"
-                    // }
-                    // else {
-                    //     sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
-                    //     input "Do you want to continue and ignore missing modules?"
-                    // }
+                    def missing_modules=sh(script: 'python3 upgrade_process.py', returnStdout: true).trim()
+                    if (missing_modules.isEmpty()) {
+                        echo "true"
+                    }
+                    else {
+                        sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
+                        input "Do you want to continue and ignore missing modules?"
+                    }
                     sh 'docker exec cicd-srv-1 /mnt/extras/upgrade.sh'
                 }
             }
 
-            // post {
-            //     failure {
-            //         script {
-            //             env.FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
         }
 
-        // stage('Push Odoo Docker Image') {
-        //     steps {
-        //         // Push odoo docker image
+        stage('Push Odoo Docker Image') {
+            steps {
+                // Push odoo docker image
                 
-        //         sh "echo 'Push Odoo Docker Image'"
-        //         sh "docker compose push"
-        //     }
+                sh "echo 'Push Odoo Docker Image'"
+                sh "docker compose push"
+            }
 
-        //     post {
-        //         failure {
-        //             script {
-        //                 env.FAILED_STAGE = env.STAGE_NAME
-        //             }
-        //         }
-        //     }
-        // }
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }
+        }
     }
 
-    // post {
-    //     success {
-    //         script {
-    //             sh "python3 notification.py success ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
-    //         }
-    //     }
-    //     failure {
-    //         script {
-    //             sh "python3 notification.py failure ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
-    //         }
-    //     }
+    post {
+        success {
+            script {
+                sh "python3 notification.py success ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
+            }
+        }
+        failure {
+            script {
+                sh "python3 notification.py failure ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
+            }
+        }
 
-    //     aborted {
-    //         script {
-    //             sh "python3 notification.py aborted ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL}"
-    //         }
-    //     }
-    // }
+        aborted {
+            script {
+                sh "python3 notification.py aborted ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL}"
+            }
+        }
+    }
 }
