@@ -4,7 +4,7 @@ import os, ast
 class CodeGenerator:
     def __init__(self):
         # self.src = "test_base_utils/tests/test_utils.py"
-        self.dest = "test_utils.sh"
+        # self.dest = "test_utils.sh"
         self.bin_path = "/opt/odoo/odoo-bin"
         self.conf_path = "/etc/odoo.conf"
         self.mod_path = "modules.txt"
@@ -15,10 +15,9 @@ class CodeGenerator:
         return os.path.isfile(fpath)
     
     def run(self):
-        f = open(self.dest, "w")
+        # f = open(self.dest, "w")
         code = self.genCode()
-        f.write(code)
-        f.close()
+        print(code)
     
     def check_module(self, fpath):
         with open(fpath, "w") as f:
