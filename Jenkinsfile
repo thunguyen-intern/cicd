@@ -45,12 +45,23 @@ pipeline {
             }
         }
 
+        stage('Odoo Run docker-compose') {
+            steps {
+                echo "--------------------------------------------------------------------------"
+                script {
+                    sh 'docker-compose up -d'
+                }
+                
+                }
+            }
+        }
+
         stage('Odoo Unit Test') {
             steps {
                 echo "--------------------------------------------------------------------------"
                 script {
-                    sh "docker compose up -d"
-                    sh "docker exec cicd-srv-1"
+                    sh 'docker exec cicd-srv-1 ls /'
+                
                 }
             }
         }
