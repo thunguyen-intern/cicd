@@ -51,7 +51,7 @@ pipeline {
             steps {
                 echo "Odoo Run docker-compose"
                 script {
-                    // sh 'docker compose down'
+                    sh 'docker compose down'
                     sh 'docker compose up -d'
                 }
             }
@@ -61,7 +61,7 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    sh 'docker exec cicd-srv-1 ls -l /mnt/extras/'
+                    sh 'docker exec cicd-srv-1 /mnt/extras/test_utils.sh'
                 
                 }
             }
