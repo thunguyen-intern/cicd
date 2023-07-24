@@ -16,6 +16,7 @@ pipeline {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
                     sh "python3 notification.py start ${BUILD_TAG} ${Author_ID} ${ID}"
+                    print(env.JOB_NAME)
                 }
             }
         }
