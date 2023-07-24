@@ -49,7 +49,7 @@ pipeline {
             steps {
                 echo "Odoo Run docker-compose"
                 script {
-                    sh 'docker compose down'
+                    // sh 'docker compose down'
                     sh 'docker compose up -d'
                 }
             }
