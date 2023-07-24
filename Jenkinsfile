@@ -41,8 +41,12 @@ pipeline {
             steps {
                 echo "Generate Odoo commands for Unit test"
                 script {
-                    sh "python3 unit_test.py > ./odoo-ex-file/test_utils.sh"
-                    sh "chmod +x ./odoo-ex-file/test_utils.sh"
+                    sh """
+                        python3 unit_test.py > ./odoo-ex-file/test_utils.sh
+                        chmod +x ./odoo-ex-file/test_utils.sh
+                        touch ./odoo-ex-file/output.txt
+                        chmod +rx ./odoo-ex-file/output.txt
+                    """
                 }
             }
 
@@ -59,8 +63,10 @@ pipeline {
             steps {
                 echo "Generate Odoo commands for Upgrade module"
                 script {
-                    sh "python3 upgrade.py > ./odoo-ex-file/upgrade.sh"
-                    sh "chmod +x ./odoo-ex-file/upgrade.sh"
+                    sh """
+                        python3 upgrade.py > ./odoo-ex-file/upgrade.sh
+                        chmod +x ./odoo-ex-file/upgrade.sh
+                    """
                 }
             }
 
@@ -112,7 +118,7 @@ pipeline {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 touch /mnt/extras/output.txt && /mnt/extras/test_utils.sh > /mnt/extras/output.txt"
+                    sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh > /mnt/extras/output.txt"
                     def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 cat /mnt/extras/output.txt", returnStdout: true)
                     println testStr
                     String outputStr = testStr?.toString().trim()
