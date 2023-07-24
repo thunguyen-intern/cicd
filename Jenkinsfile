@@ -27,9 +27,11 @@ pipeline {
                 sh "echo 'Cleaned Up Workspace For Project'"
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -43,9 +45,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -59,9 +63,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -74,9 +80,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -90,9 +98,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -106,9 +116,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -130,9 +142,11 @@ pipeline {
                 }
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
@@ -145,9 +159,11 @@ pipeline {
                 sh "docker compose push"
             }
 
-            failure {
-                script {
-                    FAILED_STAGE=env.STAGE_NAME
+            post {
+                failure {
+                    script {
+                        env.FAILED_STAGE = env.STAGE_NAME
+                    }
                 }
             }
         }
