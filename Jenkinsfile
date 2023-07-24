@@ -113,7 +113,9 @@ pipeline {
                 echo "Odoo Unit Test"
                 script {
                     def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh", returnStatus: true)
+                    print(testStr)
                     String outputStr = testStr?.toString().trim()
+                    print(outputStr)
                     def lines = outputStr.split('\n')
                     def sumLine = lines.find {
                         it.contains("odoo.tests.runner")
