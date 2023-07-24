@@ -45,6 +45,7 @@ class CodeGenerator:
         code = self.genCode()
         f.write(code)
         f.close()
+        print(code)
         return self.up_list
         
     def genCode(self):
@@ -73,8 +74,7 @@ if __name__ == "__main__":
     git_change = GetChange()
     change_list = git_change.run()
     missing = change_list - uplist
-    missing = ('A', 'B')
     if len(missing) > 0:
         result_list = [str(item) for item in missing]
-        result_string = ",".join(result_list)
+        result_string = ", ".join(result_list)
         print(result_string)
