@@ -115,9 +115,14 @@ pipeline {
                     def testOutput = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/test_utils.sh", returnStatus: true).trim()
                     def lines = testOutput.split('\n')
                     def sumLine = lines.find {
-                        it.contains("WARNING")
+                        it.contains("odoo.tests.runner")
                     }
-                    echo "Test summary: ${sumLine}"
+                    if (testSummaryLine != null) {
+                        echo "Test summary: ${sumLine}"
+                    }
+                    else {
+                        echo "Failed to find test summary line in output"
+                    }
                 }
             }    
 
