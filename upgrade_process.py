@@ -45,7 +45,6 @@ class CodeGenerator:
         code = self.genCode()
         f.write(code)
         f.close()
-        print(code)
         return self.up_list
         
     def genCode(self):
