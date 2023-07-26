@@ -111,11 +111,11 @@ pipeline {
                     sh '''
                         if [ "$(docker ps -aq)" ]; then
                             docker stop $(docker ps -aq)
+                            docker rm $(docker ps -aq)
                         else
                             echo "No running containers to stop"
                         fi
                     '''
-                    sh 'docker rm $(docker ps -aq)'
                     sh 'docker compose up -d'
                     sh 'docker ps'
                 }
