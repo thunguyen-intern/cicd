@@ -39,5 +39,3 @@ else:
     print("No divs with span='presentation' found.")
     
 print(count)
-
-

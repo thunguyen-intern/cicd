@@ -15,11 +15,10 @@ class GetChange:
 
     def list_subdirectories(self, addons):
         directory = os.getcwd() + '/' + addons
-        target_file = '__manifest__.py'
         subdirectories = set()
-        for dir_path, dir_names, filenames in os.walk(directory):
-            if target_file in filenames:
-                subdirectories.add(os.path.basename(dir_path))
+        for entry in os.scandir(directory):
+            if entry.is_dir():
+                subdirectories.add(entry.name)
         return subdirectories
 
     
