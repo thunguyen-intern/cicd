@@ -3,6 +3,8 @@ from functools import reduce
 import subprocess
 import os
 
+list_addons = ["customized_addons"]
+
 class GetChange:
     def __init__(self):
         self.commit_stat = ""
@@ -11,54 +13,39 @@ class GetChange:
         except subprocess.CalledProcessError as e:
             print(f"Error occurred: {e}")
 
-    def list_subdirectories(self):
-        directory = os.getcwd() + '/customized_addons'
+    def list_subdirectories(self, addons):
+        directory = os.getcwd() + '/' + addons
+        target_file = '__manifest__.py'
         subdirectories = set()
-        for entry in os.scandir(directory):
-            if entry.is_dir():
-                subdirectories.add(entry.path)
+        for dir_path, dir_names, filenames in os.walk(directory):
+            if target_file in filenames:
+                subdirectories.add(os.path.basename(dir_path))
         return subdirectories
 
     
     def run(self):
         git_change_set = set()
-        text_detect = "customized_addons"
-        stat_by_line = self.commit_stat.split("\n")
-        for line in stat_by_line:
-            pos = line.find(text_detect)
-            if pos != -1:
-                git_change_set.add(line.split("/")[1])
-        existing_set = self.list_subdirectories()
-        change_set = existing_set.intersection(git_change_set)
-        return change_set
+        for addons in list_addons:
+            module_list = self.list_subdirectories(addons)
+            for module in module_list:
+                if self.commit_stat.find(module) != -1:
+                    git_change_set.add(module)
+        return git_change_set
 
 class CodeGenerator:
     def __init__(self):
-        self.path = "upgrade_module.yaml"
-        self.dest = "upgrade.sh"
-        self.bin_path = "/opt/odoo/odoo-bin"
-        self.conf_path = "/etc/odoo.conf"
         self.up_list = set()
+        self.path = "upgrade_module.yaml"
     
     def run(self):
-        f = open(self.dest, "w")
-        code = self.genCode()
-        f.write(code)
-        f.close()
+        self.genCode()
         return self.up_list
         
     def genCode(self):
         _, instruc = self.read_yaml_file()
-        code = "#!/bin/bash \n \n" + self.bin_path + " -c " + self.conf_path
-        if len(instruc['upgrade_modules']) > 0:
-            code += " -u " + ','.join(instruc['upgrade_modules'])
+        if instruc['upgrade_modules'] is not None:
             for x in instruc['upgrade_modules']:
                 self.up_list.add(x)
-        if len(instruc['install_modules']) > 0:
-            code += " -i " + ','.join(instruc['install_modules'])
-        if len(instruc['database']) > 0:
-            code += " -d " + ','.join(instruc['database'])
-        return code
 
     def read_yaml_file(self):
         with open(self.path, 'r') as file:
@@ -73,7 +60,11 @@ if __name__ == "__main__":
     git_change = GetChange()
     change_list = git_change.run()
     missing = change_list - uplist
+    missing = ('A', 'B')
     if len(missing) > 0:
         result_list = [str(item) for item in missing]
-        result_string = ", ".join(result_list)
-        print(result_string)
+        result_string = ",".join(result_list)
+    else:
+        result_string = ""
+    print(result_string)
+    print(",".join(uplist))

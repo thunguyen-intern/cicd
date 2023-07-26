@@ -1,6 +1,7 @@
 version: "3"
 services:
   db:
+    container_name: postgresql_13
     hostname: db
     image: postgres:13
     # ports:
@@ -14,6 +15,7 @@ services:
     tty: true
     restart: always
   srv:
+    container_name: odoo_15
     build:
       context: .
       dockerfile: Dockerfile
@@ -23,10 +25,11 @@ services:
     restart: always
     volumes:
       - type: bind
-        source: ./odoo-ex-file
+        source: ./unit_test
         target: /mnt/extras
-      # - ./odoo-ex-file:/mnt/extras/
+      # - ./unit_test:/mnt/extras/
       - odoo_data:/opt/odoo/.local/share/Odoo
+      - .:/mnt/source
     tty: true
   proxy:
     image: nginx
@@ -34,11 +37,11 @@ services:
       - srv
     volumes:
       - ./nginx/:/etc/nginx/conf.d/
-    # ports:
-    #   - '80:80'
+    ports:
+      - '80:80'
     tty: true
 
 volumes:
   odoo_data:
-  odoo-ex-file:
+  unit_test:
   postgres_data:

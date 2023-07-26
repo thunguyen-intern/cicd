@@ -7,29 +7,25 @@ class CodeGenerator:
         # self.dest = "test_utils.sh"
         self.bin_path = "/opt/odoo/odoo-bin"
         self.conf_path = "/etc/odoo.conf"
-        self.mod_path = "modules.txt"
-        self.rootDir = "./odoo-ex-file"
-        # self.index = 0
+        self.rootDir = "./unit_test"
+        self.mod_list = []
     
     def check_path(self, fpath):
         return os.path.isfile(fpath)
     
     def run(self):
-        # f = open(self.dest, "w")
         code = self.genCode()
         print(code)
+        self.mod_list = []
     
-    def check_module(self, fpath):
-        with open(fpath, "w") as f:
-            for entry in os.scandir(self.rootDir):
-                if entry.is_dir():
-                    f.write(entry.name + '\n')
-        
-        with open(fpath, "r") as f:
-            return [modules.strip() for modules in f]
+    def check_module(self):
+        for entry in os.scandir(self.rootDir):
+            if entry.is_dir():
+                self.mod_list.append(entry.name)
+        return self.mod_list
 
     def genCode(self):
-        modules_list = self.check_module(self.mod_path)
+        modules_list = self.check_module()
         code = "#!/bin/bash \n \n" + self.bin_path + " -c " + self.conf_path
         # Load module
         # First argument from input: database name
@@ -47,7 +43,8 @@ class CodeGenerator:
             code += " --test-tag "
             code += "/"
             code += ',/'.join(modules_list)
-        code += " --stop-after-init"
+        code += " --stop-after-init\n"
+        code += "echo $?"
         return code
 
 if __name__ == "__main__":

@@ -20,14 +20,15 @@ class CodeGenerator:
     def genCode(self):
         _, instruc = self.read_yaml_file()
         code = "#!/bin/bash \n \n" + self.bin_path + " -c " + self.conf_path
-        if len(instruc['upgrade_modules']) > 0:
+        if instruc['upgrade_modules'] is not None:
             code += " -u " + ','.join(instruc['upgrade_modules'])
             for x in instruc['upgrade_modules']:
                 self.up_list.add(x)
-        if len(instruc['install_modules']) > 0:
+        if instruc['install_modules'] is not None:
             code += " -i " + ','.join(instruc['install_modules'])
-        if len(instruc['database']) > 0:
+        if instruc['database'] is not None:
             code += " -d " + ','.join(instruc['database'])
+        code += " --stop-after-init"
         return code
 
     def read_yaml_file(self):

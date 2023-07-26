@@ -1,1 +1,2 @@
-# CI/CD Odoo - Novobi
+# cicd-jenkins
+none

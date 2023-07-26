@@ -1,49 +1,58 @@
 pipeline {
-    agent any
-
+    agent {
+        label 'odoo1'
+    }
+    
     environment {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE = 'hikari141/srv:latest'
-        DOCKER_IMAGE_NAME = 'srv'
+        DOCKER_IMAGE_NAME = 'odoo_15'
         FAILED_STAGE = ''
-        webhookUrl = 'https://chat.googleapis.com/v1/spaces/1UjtyUAAAAE/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=GQpOlS3UHkR2zksm5rE8bUiCKCmrIbFsH6s_fUkqkFU'
     }
 
     stages {
-        stage('Retrieve Commit Author') {
-            steps {
-                script {
-                    Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
-                    ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    sh "python3 notification.py start ${BUILD_TAG} ${Author_ID} ${ID}"
-                }
-            }
-        }
-
-        stage('Triggered by GitHub commits') {
+        stage('Triggered-by-GitHub-commits') {
             steps {
                 cleanWs()
                 checkout scm
                 sh "echo 'Cleaned Up Workspace For Project'"
+                script {
+                    sh "pip3 install -r agent_requirements.txt"
+                }
             }
 
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
+                }
+            }
+        } 
+
+        stage('Retrieve-Commit-Author') {
+            steps {
+                script {
+                    Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
+                    Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
+                    ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
+                    uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
+                    branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
+                    sh "python3 notification.py start ${branch} ${Author_ID} ${ID} ${uId}"
+                    // branch
                 }
             }
         }
 
-        stage('Generate Odoo commands for Unit test') {
+
+        stage('Generate-Odoo-commands-for-Unit-test') {
             steps {
                 echo "Generate Odoo commands for Unit test"
                 script {
                     sh """
-                        python3 unit_test.py > ./odoo-ex-file/test_utils.sh
-                        chmod +x ./odoo-ex-file/test_utils.sh
+                        python3 unit_test.py > ./unit_test/test_utils.sh
+                        chmod +x ./unit_test/test_utils.sh
                     """
                 }
             }
@@ -51,19 +60,19 @@ pipeline {
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
                 }
             }
         }
 
-        stage('Generate Odoo commands for Upgrade module') {
+        stage('Generate-Odoo-commands-for-Upgrade-module') {
             steps {
                 echo "Generate Odoo commands for Upgrade module"
                 script {
                     sh """
-                        python3 upgrade.py > ./odoo-ex-file/upgrade.sh
-                        chmod +x ./odoo-ex-file/upgrade.sh
+                        python3 upgrade.py > ./unit_test/upgrade.sh
+                        chmod +x ./unit_test/upgrade.sh
                     """
                 }
             }
@@ -71,13 +80,13 @@ pipeline {
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
                 }
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Login-to-DockerHub') {
             steps {
                 script {
                     // Log into Docker registry
@@ -88,86 +97,93 @@ pipeline {
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
                 }
             }
         }
 
-        stage('Odoo Run docker-compose') {
+        stage('Odoo-Run-docker-compose') {
             steps {
                 echo "Odoo Run docker-compose"
                 script {
-                    sh 'docker compose down'
+                    sh 'docker stop $(docker ps -aq)'
+                    sh 'docker rm $(docker ps -aq)'
                     sh 'docker compose up -d'
+                    sh 'docker ps'
                 }
             }
 
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
                 }
             }
         }
 
-        stage('Odoo Unit Test') {
+        stage('Odoo-Unit-Test') {
             steps {
                 echo "Odoo Unit Test"
                 script {
-                    def testStr = sh(script: "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 sh -c 'bash /mnt/extras/test_utils.sh | grep \"odoo.tests.runner\"'", returnStdout: true)
-                    println testStr
-                    // String outputStr = testStr?.toString().trim()
-                    // println outputStr
-                    // def lines = outputStr.split('\n')
-                    // def sumLine = lines.find {
-                    //     it.contains("odoo.tests.runner")
-                    // }
-                    // if (sumLine != null) {
-                    //     echo "Test summary: ${sumLine}"
-                    // }
-                    // else {
-                    //     echo "Failed to find test summary line in output"
-                    // }
+                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
+                    def res = result[-1]
+                    if (res == '0') {
+                        echo "success"
+                    }
+                    else {
+                        error("Unit test failed")
+                    }
                 }
-            }    
+            }  
+            post {
+                failure {
+                    script {
+                        FAILED_STAGE = env.STAGE_NAME
+                    }
+                }
+            }  
+        }
+
+        stage('Odoo-Upgrade-Module') {
+            steps {
+                echo "Odoo Upgrade Module"
+                script {
+                    up_modules = "None"
+                    res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
+                    if (res.isEmpty()) {
+                        up_modules = "None"
+                    }
+                    else {
+                        result = res.split('\n')
+                        echo "${result}"
+                        if (result.size() == 1) {
+                            echo "true"
+                            up_modules = result[0]
+                        }
+                        else {
+                            missing_modules = result[0]
+                            up_modules = result[-1]
+                            echo "----------------------------------------------------------------"
+                            sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
+                            input "Do you want to continue and ignore missing modules?"
+                        }
+                        sh "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh"
+                    }
+                }
+            }
 
             post {
                 failure {
                     script {
-                        env.FAILED_STAGE = env.STAGE_NAME
+                        FAILED_STAGE = env.STAGE_NAME
                     }
                 }
             }
         }
 
-        // stage('Odoo Upgrade Module') {
-        //     steps {
-        //         echo "Odoo Upgrade Module"
-        //         script {
-        //             def missing_modules=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
-        //             if (missing_modules.isEmpty()) {
-        //                 echo "true"
-        //             }
-        //             else {
-        //                 sh "python3 notification.py approval ${BUILD_TAG} ${Author_ID} ${missing_modules} ${env.BUILD_URL} ${ID}"
-        //                 input "Do you want to continue and ignore missing modules?"
-        //             }
-        //             sh "docker exec ${env.JOB_NAME}-${DOCKER_IMAGE_NAME}-1 /mnt/extras/upgrade.sh"
-        //         }
-        //     }
-
-        //     post {
-        //         failure {
-        //             script {
-        //                 env.FAILED_STAGE = env.STAGE_NAME
-        //             }
-        //         }
-        //     }
-        // }
-
-        // stage('Push Odoo Docker Image') {
+        // stage('Push-Odoo-Docker-Image') {
         //     steps {
         //         sh "echo 'Push Odoo Docker Image'"
         //         sh "docker compose push"
@@ -176,7 +192,7 @@ pipeline {
         //     post {
         //         failure {
         //             script {
-        //                 env.FAILED_STAGE = env.STAGE_NAME
+        //                 FAILED_STAGE = env.STAGE_NAME
         //             }
         //         }
         //     }
@@ -186,18 +202,18 @@ pipeline {
     post {
         success {
             script {
-                sh "python3 notification.py success ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${currentBuild.duration} "
+                sh "python3 notification.py success ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${up_modules}"
             }
         }
         failure {
             script {
-                sh "python3 notification.py failure ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
+                sh "python3 notification.py failure ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
             }
         }
 
         aborted {
             script {
-                sh "python3 notification.py aborted ${BUILD_TAG} ${currentBuild.currentResult} ${Author_ID} ${ID} ${env.BUILD_URL}"
+                sh "python3 notification.py aborted ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL}"
             }
         }
     }

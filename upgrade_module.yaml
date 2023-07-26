@@ -1,3 +1,13 @@
+1.0.4:
+  time_line: [2023-07-25]
+  upgrade_modules:
+    - queue_job
+  install_modules:
+  database:
+    - abc
+  release_notes:
+    - Fix bug
+
 1.0.3:
   time_line: [2020-01-06]
   upgrade_modules:
