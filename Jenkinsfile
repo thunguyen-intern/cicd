@@ -108,7 +108,13 @@ pipeline {
             steps {
                 echo "Odoo Run docker-compose"
                 script {
-                    sh 'docker stop $(docker ps -aq)'
+                    sh """
+                        if [ "$(docker ps -aq)" ]; then
+                            docker stop $(docker ps -aq)
+                        else
+                            echo "No running containers to stop"
+                        fi
+                    """
                     sh 'docker rm $(docker ps -aq)'
                     sh 'docker compose up -d'
                     sh 'docker ps'
