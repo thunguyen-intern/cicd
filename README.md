@@ -1,1 +1,1 @@
-# CI/CD For Odoo - Novobi
+# CI/CD Odoo - Novobi
