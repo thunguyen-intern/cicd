@@ -37,9 +37,9 @@ pipeline {
                 script {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
-                    ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
-                    branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
+                    // ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
+                    // uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
+                    // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
                     sh "python3 notification.py start ${branch} ${Author_ID} ${ID} ${uId}"
                     // branch
                 }
@@ -167,7 +167,7 @@ pipeline {
                             missing_modules = result[0]
                             up_modules = result[-1]
                             echo "----------------------------------------------------------------"
-                            sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
+                            // sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
                             input "Do you want to continue and ignore missing modules?"
                         }
                         sh "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh"
@@ -200,22 +200,22 @@ pipeline {
         // }
     }
 
-    post {
-        success {
-            script {
-                sh "python3 notification.py success ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${up_modules}"
-            }
-        }
-        failure {
-            script {
-                sh "python3 notification.py failure ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
-            }
-        }
+    // post {
+    //     success {
+    //         script {
+    //             sh "python3 notification.py success ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${up_modules}"
+    //         }
+    //     }
+    //     failure {
+    //         script {
+    //             sh "python3 notification.py failure ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
+    //         }
+    //     }
 
-        aborted {
-            script {
-                sh "python3 notification.py aborted ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL}"
-            }
-        }
-    }
+    //     aborted {
+    //         script {
+    //             sh "python3 notification.py aborted ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL}"
+    //         }
+    //     }
+    // }
 }
