@@ -1,227 +1,77 @@
 pipeline {
-    agent {
-        label 'odoo1'
-    }
-    // agent any
-    
-    environment {
-        DOCKER_COMPOSE = 'docker-compose.yml'
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        DOCKER_IMAGE = 'hikari141/srv:latest'
-        DOCKER_IMAGE_NAME = 'odoo_15'
-        FAILED_STAGE = ''
-    }
+    agent any
 
     stages {
-        stage('Triggered-by-GitHub-commits') {
-            steps {
-                cleanWs()
-                checkout scm
-                sh "echo 'Cleaned Up Workspace For Project'"
-                script {
-                    sh "pip3 install -r agent_requirements.txt"
-                }
-            }
-
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
-        } 
-
-        stage('Retrieve-Commit-Author') {
+        stage('Pull Odoo Image') {
             steps {
                 script {
-                    Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
-                    Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
-                    // ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    // uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
-                    // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
-                    // sh "python3 notification.py start ${Author_ID}"
-                    // branch
+                    docker.image().pull()
                 }
             }
         }
 
-
-        stage('Generate-Odoo-commands-for-Unit-test') {
+        stage('Deploy to Blue') {
             steps {
-                echo "Generate Odoo commands for Unit test"
                 script {
-                    sh """
-                        python3 unit_test.py > ./unit_test/test_utils.sh
-                        chmod +x ./unit_test/test_utils.sh
-                    """
-                }
-            }
-
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
+                    // set the Docker Compose project name to 'blue'
+                    sh "export COMPOSE_PROJECT_NAME=blue"
+                    // run the Docker Compose file
+                    sh "docker compose up -f docker-compose.yml -d"
                 }
             }
         }
 
-        stage('Generate-Odoo-commands-for-Upgrade-module') {
+        stage('Run Tests') {
             steps {
-                echo "Generate Odoo commands for Upgrade module"
-                script {
-                    sh """
-                        python3 upgrade.py > ./unit_test/upgrade.sh
-                        chmod +x ./unit_test/upgrade.sh
-                    """
-                }
+                // insert your tests here
             }
+        }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
+        stage('Switch Nginx to Blue') {
+            steps {
+                script {
+                    // Replace the Nginx configuration to route traffic to the 'blue' environment
+                    sh "sudo cp nginx/nginx.blue.conf /etc/nginx/nginx.conf"
+                    sh "sudo service nginx reload"
                 }
             }
         }
 
-        stage('Login-to-DockerHub') {
+        stage('Deploy to Green') {
             steps {
                 script {
-                    // Log into Docker registry
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-                }
-            }
-
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
+                    // set the Docker Compose project name to 'green'
+                    sh "export COMPOSE_PROJECT_NAME=green"
+                    // run the Docker Compose file
+                    sh "docker compose up -f docker-compose.yml -d"
                 }
             }
         }
 
-        stage('Odoo-Run-docker-compose') {
+        stage('Run Tests') {
             steps {
-                echo "Odoo Run docker-compose"
-                script {
-                    sh '''
-                        if [ "$(docker ps -aq)" ]; then
-                            docker stop $(docker ps -aq)
-                            docker rm $(docker ps -aq)
-                        else
-                            echo "No running containers to stop"
-                        fi
-                    '''
-                    sh 'docker compose up -d'
-                    sh 'docker ps'
-                }
+                // insert your tests here
             }
+        }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
+        stage('Switch Nginx to Green') {
+            steps {
+                script {
+                    // Replace the Nginx configuration to route traffic to the 'green' environment
+                    sh "sudo cp nginx/nginx.green.conf /etc/nginx/nginx.conf"
+                    sh "sudo service nginx reload"
                 }
             }
         }
 
-        stage('Odoo-Unit-Test') {
+        stage('Cleanup Blue') {
             steps {
-                echo "Odoo Unit Test"
                 script {
-                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
-                    def res = result[-1]
-                    if (res == '0') {
-                        echo "success"
-                    }
-                    else {
-                        error("Unit test failed")
-                    }
-                }
-            }  
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }  
-        }
-
-        stage('Odoo-Upgrade-Module') {
-            steps {
-                echo "Odoo Upgrade Module"
-                script {
-                    up_modules = "None"
-                    res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
-                    if (res.isEmpty()) {
-                        up_modules = "None"
-                    }
-                    else {
-                        result = res.split('\n')
-                        echo "${result}"
-                        if (result.size() == 1) {
-                            echo "true"
-                            up_modules = result[0]
-                        }
-                        else {
-                            missing_modules = result[0]
-                            up_modules = result[-1]
-                            echo "----------------------------------------------------------------"
-                            // sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
-                            input "Do you want to continue and ignore missing modules?"
-                        }
-                        sh "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh"
-                    }
-                }
-            }
-
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
+                    // Remove the 'blue' environment
+                    sh "export COMPOSE_PROJECT_NAME=blue"
+                    sh "docker compose down"
                 }
             }
         }
-
-        // stage('Push-Odoo-Docker-Image') {
-        //     steps {
-        //         sh "echo 'Push Odoo Docker Image'"
-        //         sh "docker compose push"
-        //     }
-
-        //     post {
-        //         failure {
-        //             script {
-        //                 FAILED_STAGE = env.STAGE_NAME
-        //             }
-        //         }
-        //     }
-        // }
     }
-
-    // post {
-    //     success {
-    //         script {
-    //             sh "python3 notification.py success ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${up_modules}"
-    //         }
-    //     }
-    //     failure {
-    //         script {
-    //             sh "python3 notification.py failure ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
-    //         }
-    //     }
-
-    //     aborted {
-    //         script {
-    //             sh "python3 notification.py aborted ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL}"
-    //         }
-    //     }
-    // }
 }

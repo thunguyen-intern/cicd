@@ -1,40 +1,56 @@
 version: "3"
 services:
-  db:
-    container_name: postgresql_13
-    hostname: db
-    image: postgres:13
-    # ports:
-    #   - '5555:5432'
-    volumes:
-      - ./data/:/docker-entrypoint-initdb.d/
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    tty: true
-    restart: always
-  srv:
-    container_name: odoo_15
+  # db:
+  #   container_name: postgresql_13
+  #   hostname: db
+  #   image: postgres:13
+  #   volumes:
+  #     - ./data/:/docker-entrypoint-initdb.d/
+  #     - postgres_data:/var/lib/postgresql/data
+  #   environment:
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_HOST_AUTH_METHOD=trust
+  #   tty: true
+  #   restart: always
+  srv_blue:
+    # container_name: odoo_15_${COLOR}
     build:
       context: .
       dockerfile: Dockerfile
-    image: hikari141/srv:latest
-    depends_on:
-      - db
-    restart: always
+    # image: hikari141/srv:${ODOO_VERSION}
+    # depends_on:
+    #   - db
+    restart: unless_stopped
     volumes:
       - type: bind
         source: ./unit_test
         target: /mnt/extras
-      # - ./unit_test:/mnt/extras/
       - odoo_data:/opt/odoo/.local/share/Odoo
       - .:/mnt/source
     tty: true
+
+  srv_green:
+    # container_name: odoo_15_${COLOR}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: hikari141/srv:${ODOO_VERSION}
+    # depends_on:
+    #   - db
+    restart: unless_stopped
+    volumes:
+      - type: bind
+        source: ./unit_test
+        target: /mnt/extras
+      - odoo_data:/opt/odoo/.local/share/Odoo
+      - .:/mnt/source
+    tty: true
+  
   proxy:
     image: nginx
     depends_on:
-      - srv
+      - srv_blue
+      - srv_green
     volumes:
       - ./nginx/:/etc/nginx/conf.d/
     ports:
@@ -44,4 +60,4 @@ services:
 volumes:
   odoo_data:
   unit_test:
-  postgres_data:
+  # postgres_data:

@@ -1,6 +1,0 @@
-DB_HOST='192.168.56.10'
-DB_NAME='hr'
-DB_USER='admin'
-DB_PASSWORD='admin'
-DB_TABLE='admin'
-GOOGLE_CHAT_WEBHOOK_URL='https://chat.googleapis.com/v1/spaces/AAAAGxW-rNo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MoQuTUQpepCEbMWN6zWvk0z7cuKkM20Z2HPyNyHpP2I'
