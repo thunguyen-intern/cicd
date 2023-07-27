@@ -211,6 +211,13 @@ pipeline {
                 label 'odoo1'
             }
             steps {
+                sh '''
+                    if [[ "$(docker network create -d bridge odoo)" ]] then
+                        docker network create -d bridge odoo
+                    else
+                        echo "No need to create!"
+                    fi
+                '''
                 sh "docker run --name odoo_tmp -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h odoo --network=odoo hikari141/odoo:${ID}"
             }
         }
