@@ -1,31 +1,14 @@
 version: "3"
 services:
-  db:
-    container_name: postgresql_13
-    hostname: db
-    image: postgres:13
-    # ports:
-    #   - '5555:5432'
-    volumes:
-      - ./data/:/docker-entrypoint-initdb.d/
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_HOST_AUTH_METHOD=trust
-    tty: true
-    restart: always
   srv:
     container_name: odoo_15
     build:
       context: .
       dockerfile: Dockerfile
-    image: hikari141/srv:latest
-    depends_on:
-      - db
     restart: always
     volumes:
       - type: bind
-        source: ./unit_test
+        source: unit_test
         target: /mnt/extras
       # - ./unit_test:/mnt/extras/
       - odoo_data:/opt/odoo/.local/share/Odoo

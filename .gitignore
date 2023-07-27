@@ -1,6 +1,2 @@
 run.sh
 requirements.txt
-upgrade_module.yaml
-odoo.conf
-data
-nginx

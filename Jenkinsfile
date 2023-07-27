@@ -1,8 +1,8 @@
 pipeline {
-    agent {
-        label 'odoo1'
-    }
-    // agent any
+    // agent {
+    //     label 'odoo1'
+    // }
+    agent any
     
     environment {
         DOCKER_COMPOSE = 'docker-compose.yml'
@@ -37,10 +37,10 @@ pipeline {
                 script {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
-                    // ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    // uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
-                    // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
-                    // sh "python3 notification.py start ${Author_ID}"
+                    ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
+                    uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
+                    branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
+                    sh "python3 notification.py start ${Author_ID}"
                     // branch
                 }
             }
@@ -58,13 +58,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Generate-Odoo-commands-for-Upgrade-module') {
@@ -78,13 +78,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Login-to-DockerHub') {
@@ -95,13 +95,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Odoo-Run-docker-compose') {
@@ -121,13 +121,13 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
         stage('Odoo-Unit-Test') {
@@ -144,13 +144,13 @@ pipeline {
                     }
                 }
             }  
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }  
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }  
         }
 
         stage('Odoo-Upgrade-Module') {
@@ -181,29 +181,39 @@ pipeline {
                 }
             }
 
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
 
-        // stage('Push-Odoo-Docker-Image') {
-        //     steps {
-        //         sh "echo 'Push Odoo Docker Image'"
-        //         sh "docker compose push"
-        //     }
+        stage('Push-Odoo-Docker-Image') {
+            steps {
+                sh "echo 'Push Odoo Docker Image'"
+                sh "docker tag odoo_15:latest hikari141/odoo:${ID}"
+                sh "docker push hikari141/odoo:${ID}"
+            }
 
-        //     post {
-        //         failure {
-        //             script {
-        //                 FAILED_STAGE = env.STAGE_NAME
-        //             }
-        //         }
-        //     }
-        // }
+            // post {
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
+        }
+
+        stage('Deploy to agent') {
+            agent {
+                label 'odoo1'
+            }
+            steps {
+                sh "docker run --name odoo_tmp -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h odoo --network=odoo hikari141/odoo:${ID}"
+            }
+        }
     }
 
     // post {
