@@ -1,8 +1,23 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_COMPOSE = 'docker-compose.yml'
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+        DOCKER_IMAGE = 'hikari141/srv:latest'
+        DOCKER_IMAGE_NAME = 'odoo_15'
+        FAILED_STAGE = ''
+    }
+
     stages {
-        stage('Pull Odoo Image') {
+        stage('Cleanup') {
+            steps {
+                cleanWs()
+                checkout scm
+            }
+        }
+
+        stage('Pull') {
             steps {
                 script {
                     docker.image().pull()
@@ -10,7 +25,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Blue') {
+        stage('Deploy Blue') {
             steps {
                 script {
                     // set the Docker Compose project name to 'blue'
@@ -21,13 +36,14 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Blue: Run Tests') {
             steps {
                 // insert your tests here
+                sh "echo 'Hello!'"
             }
         }
 
-        stage('Switch Nginx to Blue') {
+        stage('Switch Blue/Green') {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'blue' environment
@@ -37,7 +53,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Green') {
+        stage('Deploy Green') {
             steps {
                 script {
                     // set the Docker Compose project name to 'green'
@@ -48,13 +64,14 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Green: Run Tests') {
             steps {
                 // insert your tests here
+                sh "echo 'Hello World!'"
             }
         }
 
-        stage('Switch Nginx to Green') {
+        stage('Switch Green/Blue') {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'green' environment
