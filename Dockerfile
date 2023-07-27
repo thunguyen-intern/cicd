@@ -8,13 +8,7 @@ RUN pip install --upgrade pip \
     && pip install wheel setuptools \
     && pip install -r /requirements.txt
 
-RUN chmod +x /opt/odoo/odoo-bin \
-    && mkdir -p /mnt/extras \
-    && mkdir -p /mnt/source
-
-RUN chmod 755 /mnt/extras
-
-ADD ./unit_test/ /mnt/extras/
+RUN chmod +x /opt/odoo/odoo-bin
 
 EXPOSE 8069 8071 8072
 
