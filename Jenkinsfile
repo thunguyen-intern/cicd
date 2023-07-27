@@ -38,7 +38,7 @@ pipeline {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
                     ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-                    // uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
+                    uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
                     // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
                     // sh "python3 notification.py start ${Author_ID}"
                     // branch
