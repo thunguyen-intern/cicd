@@ -36,8 +36,6 @@ pipeline {
                             echo "No running containers to stop"
                         fi
                     '''
-                    sh 'docker compose up -d'
-                    sh 'docker ps'
                 }
             }
         }
