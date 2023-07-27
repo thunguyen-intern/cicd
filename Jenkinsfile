@@ -193,7 +193,7 @@ pipeline {
         stage('Push-Odoo-Docker-Image') {
             steps {
                 sh "echo 'Push Odoo Docker Image'"
-                sh "docker tag odoo_15:latest hikari141/odoo:${ID}"
+                sh "docker tag cicd-srv:latest hikari141/odoo:${ID}"
                 sh "docker push hikari141/odoo:${ID}"
             }
 
