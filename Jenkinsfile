@@ -4,9 +4,8 @@ pipeline {
     environment {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        DOCKER_IMAGE = 'hikari141/srv:latest'
-        DOCKER_IMAGE_NAME = 'odoo_15'
-        FAILED_STAGE = ''
+        DOCKER_IMAGE_BLUE = 'odoo_15_blue'
+        DOCKER_IMAGE_GREEN = 'odoo_15_green'
     }
 
     stages {
@@ -17,10 +16,28 @@ pipeline {
             }
         }
 
-        stage('Pull') {
+        stage('Docker Login') {
             steps {
                 script {
-                    docker.image().pull()
+                    // Log into Docker registry
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                }
+            }
+        }
+
+        stage('Docker Compose') {
+            steps {
+                script {
+                    sh '''
+                        if [ "$(docker ps -aq)" ]; then
+                            docker stop $(docker ps -aq)
+                            docker rm $(docker ps -aq)
+                        else
+                            echo "No running containers to stop"
+                        fi
+                    '''
+                    sh 'docker compose up -d'
+                    sh 'docker ps'
                 }
             }
         }
@@ -31,7 +48,7 @@ pipeline {
                     // set the Docker Compose project name to 'blue'
                     sh "export COMPOSE_PROJECT_NAME=blue"
                     // run the Docker Compose file
-                    sh "docker compose up -f docker-compose.yml -d"
+                    sh "docker compose up -d"
                 }
             }
         }
@@ -59,7 +76,7 @@ pipeline {
                     // set the Docker Compose project name to 'green'
                     sh "export COMPOSE_PROJECT_NAME=green"
                     // run the Docker Compose file
-                    sh "docker compose up -f docker-compose.yml -d"
+                    sh "docker compose up -d"
                 }
             }
         }

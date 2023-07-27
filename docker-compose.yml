@@ -13,7 +13,7 @@ services:
   #   tty: true
   #   restart: always
   srv_blue:
-    # container_name: odoo_15_${COLOR}
+    container_name: odoo_15_blue
     build:
       context: .
       dockerfile: Dockerfile
@@ -30,7 +30,7 @@ services:
     tty: true
 
   srv_green:
-    # container_name: odoo_15_${COLOR}
+    container_name: odoo_15_green
     build:
       context: .
       dockerfile: Dockerfile
