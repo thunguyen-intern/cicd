@@ -62,7 +62,7 @@ pipeline {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'blue' environment
-                    sh "sudo cp nginx/nginx.blue.conf /etc/nginx/nginx.conf"
+                    sh "sudo cp nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf"
                     sh "sudo service nginx reload"
                 }
             }
