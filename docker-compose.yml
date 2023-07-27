@@ -57,6 +57,7 @@ services:
     ports:
       - '80:80'
     tty: true
+    restart: always
 
 volumes:
   odoo_data:
