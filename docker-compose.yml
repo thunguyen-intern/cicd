@@ -20,7 +20,7 @@ services:
     # image: hikari141/srv:${ODOO_VERSION}
     # depends_on:
     #   - db
-    restart: unless-stopped
+    restart: always
     volumes:
       - type: bind
         source: ./unit_test
@@ -37,7 +37,7 @@ services:
     # image: hikari141/srv:${ODOO_VERSION}
     # depends_on:
     #   - db
-    restart: unless-stopped
+    restart: always
     volumes:
       - type: bind
         source: ./unit_test
