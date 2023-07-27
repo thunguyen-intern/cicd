@@ -64,7 +64,7 @@ pipeline {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'blue' environment
                     sh """
-                        docker exec ${PROXY_IMAGE} sh -c 'cp nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf ; sudo service nginx reload'
+                        docker exec ${PROXY_IMAGE} sh -c 'cp ./nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf ; service nginx reload'
                     """
                 }
             }
@@ -93,9 +93,7 @@ pipeline {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'green' environment
                     sh """
-                        docker exec ${PROXY_IMAGE} sh -c
-                        "cp nginx/nginx.green.conf /etc/nginx/conf.d/default.conf
-                        ; sudo service nginx reload"
+                        docker exec ${PROXY_IMAGE} sh -c 'cp ./nginx/nginx.green.conf /etc/nginx/conf.d/default.conf ; service nginx reload'
                     """
                 }
             }
