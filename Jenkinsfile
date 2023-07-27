@@ -6,7 +6,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE_BLUE = 'odoo_15_blue'
         DOCKER_IMAGE_GREEN = 'odoo_15_green'
-        PROXY_IMAGE = 'nginx_latest'
+        PROXY_IMAGE = 'nginx1'
     }
 
     stages {
