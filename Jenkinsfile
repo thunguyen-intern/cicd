@@ -63,11 +63,11 @@ pipeline {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'blue' environment
-                    sh '''
+                    sh """
                         docker exec ${NGINX_IMAGE} sh -c
                         "cp nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf
                         ; sudo service nginx reload"
-                    '''
+                    """
                 }
             }
         }
@@ -94,11 +94,11 @@ pipeline {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'green' environment
-                    sh '''
+                    sh """
                         docker exec ${NGINX_IMAGE} sh -c
                         "cp nginx/nginx.green.conf /etc/nginx/conf.d/default.conf
                         ; sudo service nginx reload"
-                    '''
+                    """
                 }
             }
         }
