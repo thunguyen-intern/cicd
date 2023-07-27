@@ -47,6 +47,7 @@ services:
     tty: true
   
   proxy:
+    container_name: nginx_latest
     image: nginx
     depends_on:
       - srv_blue

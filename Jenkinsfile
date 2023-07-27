@@ -6,6 +6,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
         DOCKER_IMAGE_BLUE = 'odoo_15_blue'
         DOCKER_IMAGE_GREEN = 'odoo_15_green'
+        PROXY_IMAGE = 'nginx_latest'
     }
 
     stages {
@@ -62,8 +63,11 @@ pipeline {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'blue' environment
-                    sh "sudo cp nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf"
-                    sh "sudo service nginx reload"
+                    sh '''
+                        docker exec ${NGINX_IMAGE} bash -c
+                        "cp nginx/nginx.blue.conf /etc/nginx/conf.d/default.conf
+                        ; sudo service nginx reload"
+                    '''
                 }
             }
         }
@@ -90,8 +94,11 @@ pipeline {
             steps {
                 script {
                     // Replace the Nginx configuration to route traffic to the 'green' environment
-                    sh "sudo cp nginx/nginx.green.conf /etc/nginx/nginx.conf"
-                    sh "sudo service nginx reload"
+                    sh '''
+                        docker exec ${NGINX_IMAGE} bash -c
+                        "cp nginx/nginx.green.conf /etc/nginx/conf.d/default.conf
+                        ; sudo service nginx reload"
+                    '''
                 }
             }
         }
