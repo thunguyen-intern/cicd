@@ -188,7 +188,6 @@ pipeline {
                             archiveArtifacts artifacts: 'backup.sql.gz', fingerprint: true
                         }
                     }
-                    
                 }
             }
         }
