@@ -181,7 +181,7 @@ pipeline {
                     '''
                     script {
                         withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
-                            def backupCommand="PGPASSWORD=\$DB_PASSWORD pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
+                            def backupCommand="PGPASSWORD=\${PSQL_CREDENTIALS_PSW} pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
                             sh backupCommand
                         }
                     }
