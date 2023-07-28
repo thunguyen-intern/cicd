@@ -134,7 +134,7 @@ pipeline {
 
         stage('Push Image') {
             steps {
-                def img=sh(script: "docker inspect --format='{{.Image}}' ${DOCKER_IMAGE_NAME}", returnStdout: true).trim()
+                def img=sh(script: """docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'""", returnStdout: true).trim()
                 sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
                 sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
             }
