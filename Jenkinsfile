@@ -180,9 +180,12 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10
                     '''
                     script {
+
                         withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
                             def backupCommand="PGPASSWORD=\${PSQL_CREDENTIALS_PSW} pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
                             sh backupCommand
+                            sh 'gzip backup.sql'
+                            archiveArtifacts artifacts: 'backup.sql.gz', fingerprint: true
                         }
                     }
                     
