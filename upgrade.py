@@ -28,7 +28,8 @@ class CodeGenerator:
             code += " -i " + ','.join(instruc['install_modules'])
         if instruc['database'] is not None:
             code += " -d " + ','.join(instruc['database'])
-        code += " --stop-after-init"
+        code += " --stop-after-init\n"
+        code += "echo $?"
         return code
 
     def read_yaml_file(self):

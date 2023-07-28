@@ -15,10 +15,11 @@ class GetChange:
 
     def list_subdirectories(self, addons):
         directory = os.getcwd() + '/' + addons
+        target_file = '__manifest__.py'
         subdirectories = set()
-        for entry in os.scandir(directory):
-            if entry.is_dir():
-                subdirectories.add(entry.name)
+        for dir_path, dir_names, filenames in os.walk(directory):
+            if target_file in filenames:
+                subdirectories.add(os.path.basename(dir_path))
         return subdirectories
 
     
@@ -59,11 +60,12 @@ if __name__ == "__main__":
     git_change = GetChange()
     change_list = git_change.run()
     missing = change_list - uplist
-    missing = ('A', 'B')
     if len(missing) > 0:
         result_list = [str(item) for item in missing]
         result_string = ",".join(result_list)
     else:
         result_string = ""
-    print(result_string)
-    print(",".join(uplist))
+    if len(uplist) == 0:
+        result_string = ""
+    print("Missing:" + result_string)
+    print("Update:" + ",".join(uplist))

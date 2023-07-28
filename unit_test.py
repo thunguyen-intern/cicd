@@ -3,8 +3,6 @@ import os, ast
 
 class CodeGenerator:
     def __init__(self):
-        # self.src = "test_base_utils/tests/test_utils.py"
-        # self.dest = "test_utils.sh"
         self.bin_path = "/opt/odoo/odoo-bin"
         self.conf_path = "/etc/odoo.conf"
         self.rootDir = "./unit_test"

@@ -177,7 +177,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['vagrant1']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
+                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10
                     '''
                     script {
                         withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
