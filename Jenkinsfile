@@ -38,23 +38,13 @@ pipeline {
         }
 
 
-        stage('Generate Odoo Unit Test Commands') {
+        stage('Generate Odoo Commands') {
             steps {
-                echo "Generate Odoo Unit Test Commands"
+                echo "Generate Odoo Commands"
                 script {
                     sh """
                         python3 unit_test.py > ./unit_test/test_utils.sh
                         chmod +x ./unit_test/test_utils.sh
-                    """
-                }
-            }
-        }
-
-        stage('Generate Odoo Upgrade Module Commands') {
-            steps {
-                echo "Generate Odoo Upgrade Module Commands"
-                script {
-                    sh """
                         python3 upgrade.py > ./unit_test/upgrade.sh
                         chmod +x ./unit_test/upgrade.sh
                     """
@@ -122,7 +112,7 @@ pipeline {
             } 
         }
 
-        stage('Odoo Upgrade Module & Backup Database') {
+        stage('Backup Database & Odoo Upgrade Module') {
             steps {
                 echo "Backup Database"
                 script {
@@ -174,7 +164,32 @@ pipeline {
                         echo "Upgrade module successfully"
                     }
                     else {
-                        sshPublisher(publishers: [sshPublisherDesc(configName: 'vagrant-db', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'chmod +x recovery.sh && ./recovery.sh && rm -f recovery.sh', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'recovery.sh')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                        sshPublisher(
+                            publishers: [
+                                sshPublisherDesc(
+                                    configName: 'postgres',
+                                    transfers: [
+                                        sshTransfer(
+                                            cleanRemote: false,
+                                            excludes: '',
+                                            execCommand: 'chmod +x recovery.sh && ./recovery.sh && rm -f recovery.sh',
+                                            execTimeout: 120000,
+                                            flatten: false,
+                                            makeEmptyDirs: false,
+                                            noDefaultExcludes: false,
+                                            patternSeparator: '[, ]+',
+                                            remoteDirectory: '',
+                                            remoteDirectorySDF: false,
+                                            removePrefix: '',
+                                            sourceFiles: 'recovery.sh'
+                                        )
+                                    ],
+                                    usePromotionTimestamp: false,
+                                    useWorkspaceInPromotion: false,
+                                    verbose: false
+                                )
+                            ]
+                        )
                         error("Odoo upgrade failed")
                     }
                 }
@@ -218,11 +233,10 @@ pipeline {
         }
 
         stage('Push Image') {
+            echo "Push Image"
             steps {
                 script {
-                    def img=sh(
-                        script: "docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'",
-                        returnStdout: true).trim()
+                    def img=sh(script: "docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'", returnStdout: true).trim()
                     sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                     sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                 }
@@ -240,10 +254,9 @@ pipeline {
         //     }
         // }
 
-        
-
         stage('Deployment') {
             steps {
+                echo "Deployment"
                 sshagent(credentials: ['vagrant1']) {
                     sh '''
                         if ! docker network ls | grep -q "odoo"; then
@@ -254,30 +267,26 @@ pipeline {
                     '''
                     script {
                         def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
-                    
                         def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
-                    
+                        // ---> run docker <---
                         sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
                         sh "sleep 10"
 
-                        def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
-                    
+                        def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
                         def http_code = result.substring(9, 12)
-                    
                         if (http_code == "200"){
-                        
                             def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
-
-                            sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"
-                        
+                            // ---> switch server <---
+                            sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"                        
                             sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
-
+                            // ---> symlink with conf dir <---
                             sh "rm /etc/nginx/conf.d/blue_srv.conf"
                             sh "ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/"
                             sh "sudo service nginx reload"
-                        
+                            // ---> restart nginx <---
                             sh "docker restart nginx"
                             sh "sleep 10"
+                            // ---> stop and rm image <---
                             sh "docker stop ${blue_srv}"
                             sh "docker rm -f ${blue_srv}"
                             sh "docker rmi -f ${blue_img}"
