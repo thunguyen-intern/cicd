@@ -179,11 +179,13 @@ pipeline {
                     sh '''
                         ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
                     '''
-                    withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
-                        def backupCommand="PGPASSWORD=\$DB_PASSWORD pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
-                
-                        sh backupCommand
+                    script {
+                        withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
+                            def backupCommand="PGPASSWORD=\$DB_PASSWORD pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
+                            sh backupCommand
+                        }
                     }
+                    
                 }
             }
         }
