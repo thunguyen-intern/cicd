@@ -178,12 +178,12 @@ pipeline {
             }
             steps {
                 sh '''
-                        if [[ "$(docker network create -d bridge odoo)" ]] then
-                            docker network create -d bridge odoo
-                        else
-                            echo "No need to create!"
-                        fi
-                    '''
+                    if ! docker network ls | grep -q "odoo"; then
+                        docker network create -d bridge odoo
+                    else
+                        echo "No need to create!"
+                    fi
+                '''
                 script {
                     def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
                     
