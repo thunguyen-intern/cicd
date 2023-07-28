@@ -177,15 +177,14 @@ pipeline {
                 label 'odoo1'
             }
             steps {
-                script {
-                    sh '''
+                sh '''
                         if [[ "$(docker network create -d bridge odoo)" ]] then
                             docker network create -d bridge odoo
                         else
                             echo "No need to create!"
                         fi
                     '''
-
+                script {
                     def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
                     
                     def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
