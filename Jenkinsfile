@@ -69,7 +69,6 @@ pipeline {
             }
         }
 
-        stages {
         stage('Check And Remove Old Image') {
             steps {
                 script {
@@ -98,7 +97,6 @@ pipeline {
                 }
             }
         }
-    }
 
         stage('Run Docker Compose') {
             steps {
