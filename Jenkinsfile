@@ -9,6 +9,7 @@ pipeline {
         FAILED_STAGE = ''
         AGENT = 'odoo1'
         PSQL_CREDENTIALS = credentials('postgres')
+        DATABASE = 'postgres'
     }
 
     stages {
@@ -173,14 +174,13 @@ pipeline {
         }
 
         stage('Backup Database') {
-            agent {
-                label 'odoo1'
-            }
             steps {
-                script {
-
+                sshagent(credentials: ['vagrant1']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
+                    '''
                     withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
-                        def backupCommand="PGPASSWORD=\$DB_PASSWORD pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} mydatabase > backup.sql"
+                        def backupCommand="PGPASSWORD=\$DB_PASSWORD pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
                 
                         sh backupCommand
                     }
