@@ -166,7 +166,7 @@ pipeline {
             steps {
                 sshagent(credentials: ['vagrant1']) {
                     sh '''
-                        ssh vagrant@192.168.56.10 "echo hello"
+                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
                     '''
                 }
             }
