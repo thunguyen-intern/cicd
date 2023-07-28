@@ -7,7 +7,6 @@ pipeline {
         DOCKER_IMAGE_NAME = 'odoo_15'
         IMAGE = 'odoo'
         FAILED_STAGE = ''
-        AGENT = 'odoo1'
         PSQL_CREDENTIALS = credentials('postgres')
         DATABASE = 'postgres'
     }
@@ -192,56 +191,55 @@ pipeline {
             }
         }
 
-        // stage('Deployment') {
-        //     agent {
-        //         label 'odoo1'
-        //     }
-        //     steps {
-        //         sh '''
-        //             if ! docker network ls | grep -q "odoo"; then
-        //                 docker network create -d bridge odoo
-        //             else
-        //                 echo "No need to create!"
-        //             fi
-        //         '''
-        //         script {
-        //             def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
+        stage('Deployment') {
+            steps {
+                sshagent(credentials: ['vagrant1']) {
+                    sh '''
+                        if ! docker network ls | grep -q "odoo"; then
+                            docker network create -d bridge odoo
+                        else
+                            echo "No need to create!"
+                        fi
+                    '''
+                    script {
+                        def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
                     
-        //             def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
+                        def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
                     
-        //             sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
-        //             sh "sleep 10"
+                        sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
+                        sh "sleep 10"
 
-        //             def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
+                        def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
                     
-        //             def http_code = result.substring(9, 12)
+                        def http_code = result.substring(9, 12)
                     
-        //             if (http_code == "200"){
+                        if (http_code == "200"){
                         
-        //                 def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
+                            def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
 
-        //                 sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"
+                            sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"
                         
-        //                 sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
+                            sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
 
-        //                 sh "rm /etc/nginx/conf.d/blue_srv.conf"
-        //                 sh "ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/"
-        //                 sh "sudo service nginx reload"
+                            sh "rm /etc/nginx/conf.d/blue_srv.conf"
+                            sh "ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/"
+                            sh "sudo service nginx reload"
                         
-        //                 sh "docker restart nginx"
-        //                 sh "sleep 10"
-        //                 sh "docker stop ${blue_srv}"
-        //                 sh "docker rm -f ${blue_srv}"
-        //                 sh "docker rmi -f ${blue_img}"
-        //             }
-                    
-        //             else {
-        //                 sh "docker stop ${green_srv}"
-        //                 sh "docker rm -f ${green_srv}"
-        //                 sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
-        //             }
-        //         }
-        //     }
-        // }
+                            sh "docker restart nginx"
+                            sh "sleep 10"
+                            sh "docker stop ${blue_srv}"
+                            sh "docker rm -f ${blue_srv}"
+                            sh "docker rmi -f ${blue_img}"
+                        }
+                        else {
+                            sh "docker stop ${green_srv}"
+                            sh "docker rm -f ${green_srv}"
+                            sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                        }
+                    }
+                }
+                
+            }
+        }
     }
 }
