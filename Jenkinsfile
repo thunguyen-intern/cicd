@@ -12,64 +12,64 @@ pipeline {
     }
 
     stages {
-        // stage('Triggered By Github Commits') {
-        //     steps {
-        //         cleanWs()
-        //         checkout scm
-        //         sh "echo 'Cleaned Up Workspace For Project'"
-        //         script {
-        //             sh "pip3 install -r agent_requirements.txt"
-        //         }
-        //     }
-        // } 
+        stage('Triggered By Github Commits') {
+            steps {
+                cleanWs()
+                checkout scm
+                sh "echo 'Cleaned Up Workspace For Project'"
+                script {
+                    sh "pip3 install -r agent_requirements.txt"
+                }
+            }
+        } 
 
-        // stage('Retrieve Commit Author') {
-        //     steps {
-        //         script {
-        //             Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
-        //             Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
-        //             ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
-        //             uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
-        //             // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
-        //             // sh "python3 notification.py start ${Author_ID}"
-        //             // branch
-        //         }
-        //     }
-        // }
+        stage('Retrieve Commit Author') {
+            steps {
+                script {
+                    Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
+                    Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
+                    ID = sh(script: """git rev-parse HEAD""", returnStdout: true).trim()
+                    uId = sh(script: "python3 retrieve_user_id.py ${Author_Email}", returnStdout: true).trim()
+                    // branch = ((sh(script: """git log --format="%D" -n 1""", returnStdout: true).trim()).split(','))[1]
+                    // sh "python3 notification.py start ${Author_ID}"
+                    // branch
+                }
+            }
+        }
 
 
-        // stage('Generate Odoo Unit Test Commands') {
-        //     steps {
-        //         echo "Generate Odoo Unit Test Commands"
-        //         script {
-        //             sh """
-        //                 python3 unit_test.py > ./unit_test/test_utils.sh
-        //                 chmod +x ./unit_test/test_utils.sh
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Generate Odoo Unit Test Commands') {
+            steps {
+                echo "Generate Odoo Unit Test Commands"
+                script {
+                    sh """
+                        python3 unit_test.py > ./unit_test/test_utils.sh
+                        chmod +x ./unit_test/test_utils.sh
+                    """
+                }
+            }
+        }
 
-        // stage('Generate Odoo Upgrade Module Commands') {
-        //     steps {
-        //         echo "Generate Odoo Upgrade Module Commands"
-        //         script {
-        //             sh """
-        //                 python3 upgrade.py > ./unit_test/upgrade.sh
-        //                 chmod +x ./unit_test/upgrade.sh
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Generate Odoo Upgrade Module Commands') {
+            steps {
+                echo "Generate Odoo Upgrade Module Commands"
+                script {
+                    sh """
+                        python3 upgrade.py > ./unit_test/upgrade.sh
+                        chmod +x ./unit_test/upgrade.sh
+                    """
+                }
+            }
+        }
 
-        // stage('Login Dockerhub') {
-        //     steps {
-        //         script {
-        //             // Log into Docker registry
-        //             sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-        //         }
-        //     }
-        // }
+        stage('Login Dockerhub') {
+            steps {
+                script {
+                    // Log into Docker registry
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
+                }
+            }
+        }
 
         // stage('Check And Remove Old Image') {
         //     steps {
@@ -88,108 +88,159 @@ pipeline {
         //     }
         // }
 
-        // stage('Run Docker Compose') {
-        //     steps {
-        //         echo "Run Docker Compose"
-        //         script {
-        //             sh '''
-        //                 if [ "$(docker ps -aq)" ]; then
-        //                     docker stop $(docker ps -aq)
-        //                     docker rm $(docker ps -aq)
-        //                 else
-        //                     echo "No running containers to stop"
-        //                 fi
-        //             '''
-        //             sh 'docker compose up -d'
-        //             sh 'docker ps'
-        //         }
-        //     }
-        // }
-
-        // stage('Odoo Unit Test') {
-        //     steps {
-        //         echo "Odoo Unit Test"
-        //         script {
-        //             def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
-        //             def res = result[-1]
-        //             if (res == '0') {
-        //                 echo "success"
-        //             }
-        //             else {
-        //                 error("Unit test failed")
-        //             }
-        //         }
-        //     } 
-        // }
-
-        // stage('Odoo Upgrade Module') {
-        //     steps {
-        //         echo "Odoo Upgrade Module"
-        //         script {
-        //             up_modules = "None"
-        //             res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
-        //             if (res.isEmpty()) {
-        //                 up_modules = "None"
-        //             }
-        //             else {
-        //                 result = res.split('\n')
-        //                 echo "${result}"
-        //                 if (result.size() == 1) {
-        //                     echo "true"
-        //                     up_modules = result[0]
-        //                 }
-        //                 else {
-        //                     missing_modules = result[0]
-        //                     up_modules = result[-1]
-        //                     echo "----------------------------------------------------------------"
-        //                     // sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
-        //                     input "Do you want to continue and ignore missing modules?"
-        //                 }
-        //                 sh "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh"
-        //             }
-        //         }
-        //     }
-        // }
-
-        // stage('Push Image') {
-        //     steps {
-        //         script {
-        //             def img=sh(script: """docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'""", returnStdout: true).trim()
-        //             sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
-        //             sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
-        //         }
-                
-        //     }
-        // }
-
-        stage('SSH Agent') {
+        stage('Run Docker Compose') {
             steps {
-                sshagent(credentials: ['vagrant1']) {
+                echo "Run Docker Compose"
+                script {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
+                        if [ "$(docker ps -aq)" ]; then
+                            docker stop $(docker ps -aq)
+                            docker rm $(docker ps -aq)
+                        else
+                            echo "No running containers to stop"
+                        fi
                     '''
+                    sh 'docker compose up -d'
+                    sh 'docker ps'
                 }
             }
         }
 
-        stage('Backup Database') {
+        stage('Odoo Unit Test') {
             steps {
-                sshagent(credentials: ['vagrant1']) {
-                    sh '''
-                        ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10
-                    '''
-                    script {
+                echo "Odoo Unit Test"
+                script {
+                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
+                    def res = result[-1]
+                    if (res == '0') {
+                        echo "success"
+                    }
+                    else {
+                        error("Unit test failed")
+                    }
+                }
+            } 
+        }
 
-                        withCredentials([usernamePassword(credentialsId: 'postgres', usernameVariable: '${PSQL_CREDENTIALS_USR}', passwordVariable: '${PSQL_CREDENTAILS_PSW}')]) {
-                            def backupCommand="PGPASSWORD=\${PSQL_CREDENTIALS_PSW} pg_dump -h 192.168.56.10 -U ${PSQL_CREDENTIALS_USR} ${DATABASE} > backup.sql"
-                            sh backupCommand
-                            sh 'gzip backup.sql'
-                            archiveArtifacts artifacts: 'backup.sql.gz', fingerprint: true
-                        }
+        stage('Odoo Upgrade Module & Backup Database') {
+            steps {
+                echo "Backup Database"
+                script {
+                    up_modules = ""
+                    res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
+                    missing_modules = res.split('\n')[0].substring(8)
+                    up_modules = res.split("\n")[1].substring(7)
+                    echo "${missing_modules}"
+                    echo "${up_modules}"
+                }
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'postgres',
+                            transfers: [
+                                sshTransfer(
+                                    cleanRemote: false,
+                                    excludes: '',
+                                    execCommand: 'chmod +x backup.sh && ./backup.sh && rm -f backup.sh',
+                                    execTimeout: 120000,
+                                    flatten: false,
+                                    makeEmptyDirs: false,
+                                    noDefaultExcludes: false,
+                                    patternSeparator: '[, ]+',
+                                    remoteDirectory: '',
+                                    remoteDirectorySDF: false,
+                                    removePrefix: '',
+                                    sourceFiles: 'backup.sh'
+                                )
+                            ], 
+                            usePromotionTimestamp: false,
+                            useWorkspaceInPromotion: false,
+                            verbose: false
+                        )
+                    ]
+                )
+                echo "Odoo Upgrade Module"
+                script {
+                    if (missing_modules.isEmpty()){
+                        echo "No missing modules"
+                    }
+                    else {
+                        sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
+                        input "Do you want to continue and ignore missing modules?"
+                    }
+                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh", returnStdout: true).trim()
+                    def res = result[-1]
+                    if (res == '0') {
+                        echo "Upgrade module successfully"
+                    }
+                    else {
+                        sshPublisher(publishers: [sshPublisherDesc(configName: 'vagrant-db', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'chmod +x recovery.sh && ./recovery.sh && rm -f recovery.sh', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'recovery.sh')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                        error("Odoo upgrade failed")
                     }
                 }
             }
+
+            // post {
+            //     always {
+            //         sshPublisher(
+            //             publishers: [
+            //                 sshPublisherDesc(
+            //                     configName: 'postgres',
+            //                     transfers: [
+            //                         sshTransfer(
+            //                             cleanRemote: false,
+            //                             excludes: '',
+            //                             execCommand:
+            //                             'cd backup_data && rm -f *',
+            //                             execTimeout: 120000,
+            //                             flatten: false,
+            //                             makeEmptyDirs: false,
+            //                             noDefaultExcludes: false,
+            //                             patternSeparator: '[, ]+',
+            //                             remoteDirectory: '',
+            //                             remoteDirectorySDF: false,
+            //                             removePrefix: '',
+            //                             sourceFiles: ''
+            //                         )
+            //                     ],
+            //                     usePromotionTimestamp: false,
+            //                     useWorkspaceInPromotion: false, verbose: false
+            //                 )
+            //             ]
+            //         )
+            //     }
+            //     failure {
+            //         script {
+            //             FAILED_STAGE = env.STAGE_NAME
+            //         }
+            //     }
+            // }
         }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    def img=sh(
+                        script: "docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'",
+                        returnStdout: true).trim()
+                    sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                    sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                }
+                
+            }
+        }
+
+        // stage('SSH Agent') {
+        //     steps {
+        //         sshagent(credentials: ['vagrant1']) {
+        //             sh '''
+        //                 ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
+        //             '''
+        //         }
+        //     }
+        // }
+
+        
 
         stage('Deployment') {
             steps {
@@ -238,7 +289,6 @@ pipeline {
                         }
                     }
                 }
-                
             }
         }
     }

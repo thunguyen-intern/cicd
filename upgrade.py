@@ -2,20 +2,26 @@ import yaml
 from functools import reduce
 import subprocess
 import os
+from sys import argv
 
 class CodeGenerator:
     def __init__(self):
         self.path = "upgrade_module.yaml"
-        self.dest = "upgrade.sh"
+        self.dest = "backup.sh"
+        self.recovery = "recovery.sh"
         self.bin_path = "/opt/odoo/odoo-bin"
         self.conf_path = "/etc/odoo.conf"
         self.up_list = set()
     
     def run(self):
-        # f = open(self.dest, "w")
+        self.f = open(self.dest, "w")
+        self.f.write('#!/bin/bash\n')
+        self.g = open(self.recovery, "w")
+        self.g.write('#!/bin/bash\n')
         code = self.genCode()
         print(code)
-        # return self.up_list
+        self.f.close()
+        self.g.close()
         
     def genCode(self):
         _, instruc = self.read_yaml_file()
@@ -28,6 +34,10 @@ class CodeGenerator:
             code += " -i " + ','.join(instruc['install_modules'])
         if instruc['database'] is not None:
             code += " -d " + ','.join(instruc['database'])
+            for db in instruc['database']:
+                backup = "pg_dump {} > backup_data/{}_backup.sql\n".format(db, db)
+                self.f.write(backup)
+                self.g.write("dropdb {}\ncreatedb {} --owner='admin'\npsql dbname < backup_data/{}_backup.sql\n".format(db, db, db))
         code += " --stop-after-init\n"
         code += "echo $?"
         return code
