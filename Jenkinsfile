@@ -1,19 +1,16 @@
 pipeline {
-    // agent {
-    //     label 'odoo1'
-    // }
     agent any
     
     environment {
         DOCKER_COMPOSE = 'docker-compose.yml'
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-        DOCKER_IMAGE = 'hikari141/srv:latest'
         DOCKER_IMAGE_NAME = 'odoo_15'
         FAILED_STAGE = ''
+        AGENT = 'odoo1'
     }
 
     stages {
-        stage('Triggered-by-GitHub-commits') {
+        stage('Triggered By Github Commits') {
             steps {
                 cleanWs()
                 checkout scm
@@ -22,17 +19,9 @@ pipeline {
                     sh "pip3 install -r agent_requirements.txt"
                 }
             }
-
-            post {
-                failure {
-                    script {
-                        FAILED_STAGE = env.STAGE_NAME
-                    }
-                }
-            }
         } 
 
-        stage('Retrieve-Commit-Author') {
+        stage('Retrieve Commit Author') {
             steps {
                 script {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
@@ -47,9 +36,9 @@ pipeline {
         }
 
 
-        stage('Generate-Odoo-commands-for-Unit-test') {
+        stage('Generate Odoo Unit Test Commands') {
             steps {
-                echo "Generate Odoo commands for Unit test"
+                echo "Generate Odoo Unit Test Commands"
                 script {
                     sh """
                         python3 unit_test.py > ./unit_test/test_utils.sh
@@ -57,19 +46,11 @@ pipeline {
                     """
                 }
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
-        stage('Generate-Odoo-commands-for-Upgrade-module') {
+        stage('Generate Odoo Upgrade Module Commands') {
             steps {
-                echo "Generate Odoo commands for Upgrade module"
+                echo "Generate Odoo Upgrade Module Commands"
                 script {
                     sh """
                         python3 upgrade.py > ./unit_test/upgrade.sh
@@ -77,36 +58,20 @@ pipeline {
                     """
                 }
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
-        stage('Login-to-DockerHub') {
+        stage('Login Dockerhub') {
             steps {
                 script {
                     // Log into Docker registry
                     sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
                 }
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
-        stage('Odoo-Run-docker-compose') {
+        stage('Run Docker Compose') {
             steps {
-                echo "Odoo Run docker-compose"
+                echo "Run Docker Compose"
                 script {
                     sh '''
                         if [ "$(docker ps -aq)" ]; then
@@ -120,17 +85,9 @@ pipeline {
                     sh 'docker ps'
                 }
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
-        stage('Odoo-Unit-Test') {
+        stage('Odoo Unit Test') {
             steps {
                 echo "Odoo Unit Test"
                 script {
@@ -143,17 +100,10 @@ pipeline {
                         error("Unit test failed")
                     }
                 }
-            }  
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }  
+            } 
         }
 
-        stage('Odoo-Upgrade-Module') {
+        stage('Odoo Upgrade Module') {
             steps {
                 echo "Odoo Upgrade Module"
                 script {
@@ -180,65 +130,73 @@ pipeline {
                     }
                 }
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
-        stage('Push-Odoo-Docker-Image') {
+        stage('Push Image') {
             steps {
-                sh "echo 'Push Odoo Docker Image'"
-                sh "docker tag cicd-srv:latest hikari141/odoo:${ID}"
-                sh "docker push hikari141/odoo:${ID}"
+                def img=sh(script: "docker inspect --format='{{.Image}}' ${DOCKER_IMAGE_NAME}", returnStdout: true).trim()
+                sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
+                sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
             }
-
-            // post {
-            //     failure {
-            //         script {
-            //             FAILED_STAGE = env.STAGE_NAME
-            //         }
-            //     }
-            // }
         }
 
         stage('Deploy to agent') {
             agent {
-                label 'odoo1'
+                label '${AGENT}'
             }
             steps {
-                sh '''
-                    if [[ "$(docker network create -d bridge odoo)" ]] then
-                        docker network create -d bridge odoo
-                    else
-                        echo "No need to create!"
-                    fi
-                '''
-                sh "docker run --name odoo_tmp -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h odoo --network=odoo hikari141/odoo:${ID}"
+                script {
+                    sh '''
+                        if [[ "$(docker network create -d bridge odoo)" ]] then
+                            docker network create -d bridge odoo
+                        else
+                            echo "No need to create!"
+                        fi
+                    '''
+
+                    def blue_srv=sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo"', returnStdout: true).trim()
+                    
+                    def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
+                    
+                    sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
+                    sh "sleep 10"
+
+                    def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
+                    
+                    def http_code = result.substring(9, 12)
+                    
+                    if (http_code == "200"){
+                        
+                        def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
+
+                        sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"
+                        
+                        sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
+
+                        sh '''
+                            rm /etc/nginx/conf.d/blue_srv.conf
+                            ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/
+                            sudo service nginx reload
+                        '''
+                        
+                        sh "docker restart nginx"
+                        sh "sleep 10"
+                        sh '''
+                            docker stop ${blue_srv}
+                            docker rm -f ${blue_srv}
+                            docker rmi -f ${blue_img}
+                        '''
+                    }
+                    
+                    else {
+                        sh '''
+                            docker stop ${green_srv}
+                            docker rm -f ${green_srv}
+                            docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}
+                        '''
+                    }
+                }
             }
         }
     }
-
-    // post {
-    //     success {
-    //         script {
-    //             sh "python3 notification.py success ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${currentBuild.duration} ${up_modules}"
-    //         }
-    //     }
-    //     failure {
-    //         script {
-    //             sh "python3 notification.py failure ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL} ${FAILED_STAGE}"
-    //         }
-    //     }
-
-    //     aborted {
-    //         script {
-    //             sh "python3 notification.py aborted ${branch} ${currentBuild.currentResult} ${Author_ID} ${uId} ${ID} ${env.BUILD_URL}"
-    //         }
-    //     }
-    // }
 }

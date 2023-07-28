@@ -1,8 +1,10 @@
 ./data
 ./nginx
+./unit_test
 docker-compose.yml
 Dockerfile
 Jenkinsfile
 notification.py
 README.md
 run.sh
+__pycache__
