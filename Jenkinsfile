@@ -69,6 +69,37 @@ pipeline {
             }
         }
 
+        stages {
+        stage('Check And Remove Old Image') {
+            steps {
+                script {
+                    def runningContainers = sh(script: "docker ps --format '{{.Image}}' --filter ancestor=${DOCKER_IMAGE_NAME}", returnStdout: true).trim()
+
+                    if (runningContainers.contains('${DOCKER_IMAGE_NAME}')) {
+                        echo "Found running container with '${DOCKER_IMAGE_NAME}' image. Stopping and removing..."
+                        sh "docker stop \$(docker ps -a -q --filter ancestor=${DOCKER_IMAGE_NAME})"
+
+                        sh "docker rm -f \$(docker ps -a -q --filter ancestor=odoo_15)"
+                    }
+                    else {
+                        echo "No running containers found with '${DOCKER_IMAGE_NAME}' image."
+                    }
+
+                    def imgExists = sh(script: "docker image ls --format '{{.Repository}}' | grep -w ${DOCKER_IMAGE_NAME} || true", returnStdout: true).trim()
+
+                    if (imgExists == '${DOCKER_IMAGE_NAME}') {
+                        echo "Found '${DOCKER_IMAGE_NAME}' image. Removing..."
+
+                        sh "docker rmi -f ${DOCKER_IMAGE_NAME}"
+                    }
+                    else {
+                        echo "No '${DOCKER_IMAGE_NAME}' image found."
+                    }
+                }
+            }
+        }
+    }
+
         stage('Run Docker Compose') {
             steps {
                 echo "Run Docker Compose"
@@ -184,19 +215,15 @@ pipeline {
                         
                         sh "docker restart nginx"
                         sh "sleep 10"
-                        sh '''
-                            docker stop ${blue_srv}
-                            docker rm -f ${blue_srv}
-                            docker rmi -f ${blue_img}
-                        '''
+                        sh "docker stop ${blue_srv}"
+                        sh "docker rm -f ${blue_srv}"
+                        sh "docker rmi -f ${blue_img}"
                     }
                     
                     else {
-                        sh '''
-                            docker stop ${green_srv}
-                            docker rm -f ${green_srv}
-                            docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}
-                        '''
+                        sh "docker stop ${green_srv}"
+                        sh "docker rm -f ${green_srv}"
+                        sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
                     }
                 }
             }
