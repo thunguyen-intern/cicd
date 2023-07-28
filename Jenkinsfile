@@ -204,11 +204,9 @@ pipeline {
                         
                         sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
 
-                        sh '''
-                            rm /etc/nginx/conf.d/blue_srv.conf
-                            ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/
-                            sudo service nginx reload
-                        '''
+                        sh "rm /etc/nginx/conf.d/blue_srv.conf"
+                        sh "ln -s /home/vagrant/proxy/green_srv.conf /etc/nginx/conf.d/"
+                        sh "sudo service nginx reload"
                         
                         sh "docker restart nginx"
                         sh "sleep 10"
