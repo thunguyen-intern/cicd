@@ -145,7 +145,7 @@ pipeline {
 
         stage('Deploy to agent') {
             agent {
-                label '${AGENT}'
+                label 'odoo1'
             }
             steps {
                 script {
