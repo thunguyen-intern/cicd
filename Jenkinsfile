@@ -18,7 +18,7 @@ pipeline {
                 checkout scm
                 sh "echo 'Cleaned Up Workspace For Project'"
                 script {
-                    sh "pip3 install -r agent_requirements.txt"
+                    sh "pip install -r agent_requirements.txt"
                 }
             }
         } 
