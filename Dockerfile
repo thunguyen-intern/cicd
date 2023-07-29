@@ -5,8 +5,8 @@ ADD /odoo.conf /etc/
 ADD ./customized_addons /opt/odoo/customized_addons/
 COPY /requirements.txt /
 RUN pip install --upgrade pip \
-    && pip install wheel setuptools \
-    && pip install -r /requirements.txt
+    && pip3 install wheel setuptools \
+    && pip3 install -r /requirements.txt
 
 RUN chmod +x /opt/odoo/odoo-bin \
     && mkdir -p /mnt/extras \
