@@ -121,7 +121,7 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'postgres',
+                            configName: 'vagrant',
                             transfers: [
                                 sshTransfer(
                                     cleanRemote: false,
@@ -162,7 +162,7 @@ pipeline {
                         sshPublisher(
                             publishers: [
                                 sshPublisherDesc(
-                                    configName: 'postgres',
+                                    configName: 'vagrant',
                                     transfers: [
                                         sshTransfer(
                                             cleanRemote: false,
