@@ -61,23 +61,6 @@ pipeline {
             }
         }
 
-        // stage('Check And Remove Old Image') {
-        //     steps {
-        //         script {
-        //             def imgExists = sh(script: "docker image ls --format '{{.Repository}}' | grep -w ${IMAGE} || true", returnStdout: true).trim()
-
-        //             if (imgExists == '${DOCKER_IMAGE_NAME}') {
-        //                 echo "Found '${IMAGE}' image. Removing..."
-
-        //                 sh "docker rmi -f ${IMAGE}"
-        //             }
-        //             else {
-        //                 echo "No '${IMAGE}' image found."
-        //             }
-        //         }
-        //     }
-        // }
-
         stage('Run Docker Compose') {
             steps {
                 echo "Run Docker Compose"
@@ -90,6 +73,19 @@ pipeline {
                             echo "No running containers to stop"
                         fi
                     '''
+                    def commitId = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    def previousCommitId = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
+                    
+                    def changes = sh(script: "git diff --name-only ${previousCommitId} ${commitId}", returnStdout: true).trim()
+                    if (changes.contains('Dockerfile')
+                    || changes.contains('docker-compose.yml')
+                    || changes.contains('odoo.conf')
+                    || changes.contains('./nginx/')) {
+                        sh 'docker compose build'
+                    }
+                    else {
+                        echo "No Changes Detected"
+                    }
                     sh 'docker compose up -d'
                     sh 'docker ps'
                 }
@@ -106,7 +102,7 @@ pipeline {
                         echo "success"
                     }
                     else {
-                        error("Unit test failed")
+                        error("Unit Test Failed")
                     }
                 }
             } 
@@ -243,16 +239,6 @@ pipeline {
                 
             }
         }
-
-        // stage('SSH Agent') {
-        //     steps {
-        //         sshagent(credentials: ['vagrant1']) {
-        //             sh '''
-        //                 ssh -o StrictHostKeyChecking=no vagrant@192.168.56.10 "echo hello"
-        //             '''
-        //         }
-        //     }
-        // }
 
         stage('Deployment') {
             steps {
