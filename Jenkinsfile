@@ -78,7 +78,8 @@ pipeline {
                     if (changes.contains('Dockerfile')
                     || changes.contains('docker-compose.yml')
                     || changes.contains('odoo.conf')
-                    || changes.contains('./nginx/')) {
+                    || changes.contains('./nginx/')
+                    || changes.contains('./data/')) {
                         sh 'docker compose build'
                     }
                     else {
