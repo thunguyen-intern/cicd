@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'odoo1'
+        label 'local'
     }
     
     environment {
