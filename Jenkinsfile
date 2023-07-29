@@ -229,8 +229,8 @@ pipeline {
         }
 
         stage('Push Image') {
-            echo "Push Image"
             steps {
+                echo "Push Image"
                 script {
                     def img=sh(script: "docker inspect --format='{{.Image}}' '${DOCKER_IMAGE_NAME}'", returnStdout: true).trim()
                     sh "docker tag ${img} ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
@@ -243,47 +243,50 @@ pipeline {
         stage('Deployment') {
             steps {
                 echo "Deployment"
-                def hosts = [
-                    [host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
-                    [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
-                    [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
-                ]
-                hosts.each { host ->
-                    withEnv(["DOCKER_HOST=${host.host}"]) {
-                        sh '''
-                            if ! docker network ls | grep -q "odoo"; then
-                                docker network create -d bridge odoo
-                            else
-                                echo "No need to create!"
-                            fi
-                        '''
-                        def blue_srv=sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
-                        def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
-                        sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
-                        sh "sleep 10"
+                script {
+                    def hosts = [
+                        [host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
+                        [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                        [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
+                    ]
+                    hosts.each { host ->
+                        withEnv(["DOCKER_HOST=${host.host}"]) {
+                            sh '''
+                                if ! docker network ls | grep -q "odoo"; then
+                                    docker network create -d bridge odoo
+                                else
+                                    echo "No need to create!"
+                                fi
+                            '''
+                            def blue_srv=sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
+                            def green_srv = (blue_srv == 'blue') ? 'green' : 'blue'
+                            sh "docker run --name ${green_srv} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${green_srv} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/odoo:${ID}"
+                            sh "sleep 10"
 
-                        def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
-                        def http_code = result.substring(9, 12)
-                        if (http_code == "200"){
-                            def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
-                            sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"                        
-                            sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
+                            def result=sh(script: "docker exec ${green_srv} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
+                            def http_code = result.substring(9, 12)
+                            if (http_code == "200"){
+                                def blue_img=sh(script: "docker inspect --format='{{.Image}}' ${blue_srv}", returnStdout: true).trim()
+                                sh "mv /home/vagrant/proxy/${blue_srv}.conf /home/vagrant/proxy/${blue_srv}.conf.template"                        
+                                sh "mv /home/vagrant/proxy/${green_srv}.conf.template /home/vagrant/proxy/${green_srv}.conf"
                             // sh "rm /etc/nginx/conf.d/${blue_srv}.conf"
                             // sh "ln -s /home/vagrant/proxy/${green_srv}.conf /etc/nginx/conf.d/"
                             // sh "sudo service nginx reload"
-                            sh "docker restart nginx"
-                            sh "sleep 10"
-                            sh "docker stop ${blue_srv}"
-                            sh "docker rm -f ${blue_srv}"
-                            sh "docker rmi -f ${blue_img}"
-                        }
-                        else {
-                            sh "docker stop ${green_srv}"
-                            sh "docker rm -f ${green_srv}"
-                            sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                                sh "docker restart nginx"
+                                sh "sleep 10"
+                                sh "docker stop ${blue_srv}"
+                                sh "docker rm -f ${blue_srv}"
+                                sh "docker rmi -f ${blue_img}"
+                            }
+                            else {
+                                sh "docker stop ${green_srv}"
+                                sh "docker rm -f ${green_srv}"
+                                sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                            }
                         }
                     }
                 }
+                
             }
         }
     }
