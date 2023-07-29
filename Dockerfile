@@ -5,8 +5,8 @@ ADD /odoo.conf /etc/
 ADD ./customized_addons /opt/odoo/customized_addons/
 COPY /requirements.txt /
 RUN python3 -m venv env \
-    source env/bin/activate \
-    pip install --upgrade pip \
+    && source env/bin/activate \
+    && pip install --upgrade pip \
     && pip install wheel setuptools \
     && pip install -r /requirements.txt
 
