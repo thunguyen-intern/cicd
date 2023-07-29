@@ -1,6 +1,6 @@
 DB_HOST='192.168.56.10'
 DB_NAME='postgres'
-DB_USER='odoo'
-DB_PASSWORD='odoo'
+DB_USER='admin'
+DB_PASSWORD='admin'
 DB_TABLE='hr'
 GOOGLE_CHAT_WEBHOOK_URL='https://chat.googleapis.com/v1/spaces/AAAAGxW-rNo/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=MoQuTUQpepCEbMWN6zWvk0z7cuKkM20Z2HPyNyHpP2I'
