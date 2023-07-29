@@ -244,9 +244,9 @@ pipeline {
             steps {
                 echo "Deployment"
                 def hosts = [
-                    [host: 'tcp://host1:2375', container: 'odoo1'],
-                    [host: 'tcp://host2:2375', container: 'odoo2'],
-                    [host: 'tcp://host3:2375', container: 'odoo3'],
+                    [host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
+                    [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                    [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                 ]
                 hosts.each { host ->
                     withEnv(["DOCKER_HOST=${host.host}"]) {
@@ -281,9 +281,9 @@ pipeline {
                             sh "docker stop ${green_srv}"
                             sh "docker rm -f ${green_srv}"
                             sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                        }
                     }
                 }
-            }
             }
         }
     }
