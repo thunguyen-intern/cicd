@@ -76,10 +76,10 @@ pipeline {
                     
                     def changes = sh(script: "git diff --name-only ${previousCommitId} ${commitId}", returnStdout: true).trim()
                     if (changes.contains('Dockerfile')
-                    || changes.contains('docker-compose.yml')
-                    || changes.contains('odoo.conf')
-                    || changes.contains('./nginx/')
-                    || changes.contains('./data/')) {
+                        || changes.contains('docker-compose.yml')
+                        || changes.contains('odoo.conf')
+                        || changes.contains('./nginx/')
+                        ) {
                         sh 'docker compose build'
                     }
                     else {
