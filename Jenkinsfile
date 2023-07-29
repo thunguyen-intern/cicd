@@ -20,7 +20,7 @@ pipeline {
                 script {
                     sh "sudo apt-get update"
                     sh "sudo apt-get install python3-pip"
-                    sh "pip install -r agent_requirements.txt"
+                    sh "pip3 install -r agent_requirements.txt"
                 }
             }
         } 
