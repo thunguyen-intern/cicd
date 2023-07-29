@@ -1,6 +1,3 @@
-./data
-./nginx
-./unit_test
 docker-compose.yml
 Dockerfile
 Jenkinsfile
