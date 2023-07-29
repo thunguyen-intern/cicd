@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'odoo1'
+    }
     
     environment {
         DOCKER_COMPOSE = 'docker-compose.yml'
