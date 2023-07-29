@@ -18,15 +18,10 @@ pipeline {
                 checkout scm
                 sh "echo 'Cleaned Up Workspace For Project'"
                 script {
-                    sh "sudo apt-get update"
-                    sh "sudo apt-get install -y python3-pip"
+                    // sh "sudo apt-get update"
+                    // sh "sudo apt-get install -y python3-pip"
                     sh "pip3 install -r agent_requirements.txt"
                 }
-            }
-        } 
-
-        stage('Retrieve Commit Author') {
-            steps {
                 script {
                     Author_ID = sh(script: """git log --format="%an" -n 1""", returnStdout: true).trim()
                     Author_Email = sh(script: """git log --format="%ae" -n 1""", returnStdout: true).trim()
@@ -38,7 +33,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Generate Odoo Commands') {
             steps {
