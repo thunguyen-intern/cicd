@@ -18,6 +18,8 @@ pipeline {
                 checkout scm
                 sh "echo 'Cleaned Up Workspace For Project'"
                 script {
+                    sh "sudo apt-get update"
+                    sh "sudo apt-get install python3-pip"
                     sh "pip install -r agent_requirements.txt"
                 }
             }
