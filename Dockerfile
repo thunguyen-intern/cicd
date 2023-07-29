@@ -4,7 +4,9 @@ FROM hikari141/odoo15:latest
 ADD /odoo.conf /etc/
 ADD ./customized_addons /opt/odoo/customized_addons/
 COPY /requirements.txt /
-RUN pip install --upgrade pip \
+RUN python3 -m venv env \
+    source env/bin/activate \
+    pip install --upgrade pip \
     && pip install wheel setuptools \
     && pip install -r /requirements.txt
 
