@@ -71,20 +71,20 @@ pipeline {
                             echo "No running containers to stop"
                         fi
                     '''
-                    def commitId = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
-                    def previousCommitId = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
+                    // def commitId = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    // def previousCommitId = sh(script: 'git rev-parse HEAD~1', returnStdout: true).trim()
                     
-                    def changes = sh(script: "git diff --name-only ${previousCommitId} ${commitId}", returnStdout: true).trim()
-                    if (changes.contains('Dockerfile')
-                        || changes.contains('docker-compose.yml')
-                        || changes.contains('odoo.conf')
-                        || changes.contains('./nginx/')
-                        ) {
-                        sh 'docker compose build'
-                    }
-                    else {
-                        echo "No Changes Detected"
-                    }
+                    // def changes = sh(script: "git diff --name-only ${previousCommitId} ${commitId}", returnStdout: true).trim()
+                    // if (changes.contains('Dockerfile')
+                    //     || changes.contains('docker-compose.yml')
+                    //     || changes.contains('odoo.conf')
+                    //     || changes.contains('./nginx/')
+                    //     ) {
+                    //     sh 'docker compose build'
+                    // }
+                    // else {
+                    //     echo "No Changes Detected"
+                    // }
                     sh 'docker compose up -d'
                     sh 'docker ps'
                 }
