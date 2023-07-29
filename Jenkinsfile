@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'local'
+        label 'master'
     }
     
     environment {
