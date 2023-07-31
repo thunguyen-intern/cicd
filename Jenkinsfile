@@ -251,6 +251,9 @@ pipeline {
 
                     def firstServerVersion = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
                     def newVersion = (firstServerVersion == 'odoo_blue') ? 'odoo_green' : 'odoo_blue'
+                    println(firstServerVersion)
+                    println(newVersion)
+                    println("-----------------------------------")
                     hosts.each { host ->
                         withEnv(["DOCKER_HOST=${host.host}"]) {
                             
@@ -259,6 +262,7 @@ pipeline {
                             def result=sh(script: "docker exec ${newVersion} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
                             http_code = result.substring(9, 12)
                             if (http_code == "200"){
+                                println("-----------------------------------")
                                 cur_image=sh(script: "docker inspect --format='{{.Image}}' ${firstServerVersion}", returnStdout: true).trim()
                                 sh "mv /home/vagrant/proxy/${firstServerVersion}.conf /home/vagrant/proxy/${firstServerVersion}.conf.template"
                                 sh "mv /home/vagrant/proxy/${newVersion}.conf.template /home/vagrant/proxy/${newVersion}.conf"
