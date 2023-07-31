@@ -287,7 +287,7 @@ void deployToHost(host, version, oppositeVersion) {
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             sh """
                 docker run --network odoo --name ${host.container}_${oppositeVersion} -d ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}
-                docker run --network odoo --name  -v /nginx/default.conf:/etc/nginx/nginx.conf -d nginx
+                docker run --network odoo --name ${host.container}_${oppositeVersion} -v /nginx/default.conf:/etc/nginx/nginx.conf -d nginx
                 docker run --name ${host.container}_${oppositeVersion} --link ${host.container}_${oppositeVersion}:${host.container}_${oppositeVersion} -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
                 sudo service nginx reload
