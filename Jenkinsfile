@@ -244,9 +244,9 @@ pipeline {
                 echo "Deployment"
                 script {
                     def hosts = [
-                        [host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
-                        [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
-                        [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
+                        [agentLabel: 'vm1', host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
+                        [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                        [agentLabel: 'vm3', host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
 
                     withEnv(["DOCKER_HOST=${hosts[0].host}"]) {
@@ -260,7 +260,14 @@ pipeline {
                         println("---------------------------------")
                         // Deploy the same version to all servers
                         hosts.each { host ->
-                            deployToHost(host, version, oppositeVersion)
+                            stage("Deploy to ${host.container}") {
+                                agent { label host.agentLabel }
+                                steps {
+                                    withEnv(["DOCKER_HOST=${host.host}"]) {
+                                        deployToHost(host, version, oppositeVersion)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -279,9 +286,10 @@ void deployToHost(host, version, oppositeVersion) {
         if (http_code == "200"){
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
-            sh "mv /home/vagrant/proxy/${host.container}_${version}.conf /home/vagrant/proxy/${host.container}_${version}.conf.template"
-            sh "mv /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf.template /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf"
-            sh "docker restart nginx"
+            sh """
+                ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
+                sudo service nginx reload
+            """
             sleep(time:10,unit:"SECONDS")
             sh "docker stop ${host.container}_${version} && docker rm ${host.container}_${version} && docker rmi ${cur_image}"
         }
