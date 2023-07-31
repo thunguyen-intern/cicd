@@ -9,7 +9,6 @@ pipeline {
         DOCKER_IMAGE_NAME = 'odoo_15'
         IMAGE = 'odoo'
         FAILED_STAGE = ''
-        HOSTS_FILE='/etc/hosts'
     }
 
     stages {
@@ -245,6 +244,7 @@ pipeline {
                                 sh '''
                                     CONTAINER_NAME=${host.container}
                                     HOST_NAME=${host.container}
+                                    HOSTS_FILE=/etc/hosts
 
                                     IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_NAME)
 
