@@ -262,6 +262,7 @@ pipeline {
                             if (firstServerColor == '') {
                                 firstServerColor = activeColor
                             }
+                            println firstServerColor
                             def inactiveColor = (firstServerColor == 'blue') ? 'green' : 'blue'
                             sh "docker run --name ${firstServerColor} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${firstServerColor} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             sh "sleep 10"
