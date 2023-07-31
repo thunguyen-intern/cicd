@@ -234,7 +234,7 @@ pipeline {
                 script {
                     def hosts = [
                         [agentLabel: 'vm1', host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
-                        [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                        // [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
                         [agentLabel: 'vm3', host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
 
@@ -248,7 +248,7 @@ pipeline {
                                     CONTAINER_NAME=${containerName}
                                     HOST_NAME=${hostName}
                                     HOSTS_FILE=${hostsFile}
-                                    IP=\$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \$CONTAINER_NAME)
+                                    IP=\$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" \$CONTAINER_NAME)
                                     if grep -q "\$HOST_NAME" "\$HOSTS_FILE"; then
                                         sudo sed -i "/\$HOST_NAME/d" \$HOSTS_FILE
                                     fi
@@ -267,7 +267,7 @@ pipeline {
                 script {
                     def hosts = [
                         [agentLabel: 'vm1', host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
-                        [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                        // [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
                         [agentLabel: 'vm3', host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
 
