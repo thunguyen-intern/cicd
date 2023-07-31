@@ -107,88 +107,88 @@ pipeline {
             } 
         }
 
-        stage('Backup Database & Odoo Upgrade Module') {
-            steps {
-                echo "Backup Database"
-                script {
-                    up_modules = ""
-                    res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
-                    missing_modules = res.split('\n')[0].substring(8)
-                    up_modules = res.split("\n")[1].substring(7)
-                    echo "${missing_modules}"
-                    echo "${up_modules}"
-                }
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'vagrant1',
-                            transfers: [
-                                sshTransfer(
-                                    cleanRemote: false,
-                                    excludes: '',
-                                    execCommand: 'chmod +x backup.sh && ./backup.sh && rm -f backup.sh',
-                                    execTimeout: 120000,
-                                    flatten: false,
-                                    makeEmptyDirs: false,
-                                    noDefaultExcludes: false,
-                                    patternSeparator: '[, ]+',
-                                    remoteDirectory: '',
-                                    remoteDirectorySDF: false,
-                                    removePrefix: '',
-                                    sourceFiles: 'backup.sh'
-                                )
-                            ], 
-                            usePromotionTimestamp: false,
-                            useWorkspaceInPromotion: false,
-                            verbose: false
-                        )
-                    ]
-                )
-                echo "Odoo Upgrade Module"
-                script {
-                    if (missing_modules.isEmpty()){
-                        echo "No missing modules"
-                    }
-                    else {
-                        sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
-                        input "Do you want to continue and ignore missing modules?"
-                    }
-                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh", returnStdout: true).trim()
-                    def res = result[-1]
-                    if (res == '0') {
-                        echo "Upgrade module successfully"
-                    }
-                    else {
-                        sshPublisher(
-                            publishers: [
-                                sshPublisherDesc(
-                                    configName: 'vagrant1',
-                                    transfers: [
-                                        sshTransfer(
-                                            cleanRemote: false,
-                                            excludes: '',
-                                            execCommand: 'chmod +x recovery.sh && ./recovery.sh && rm -f recovery.sh',
-                                            execTimeout: 120000,
-                                            flatten: false,
-                                            makeEmptyDirs: false,
-                                            noDefaultExcludes: false,
-                                            patternSeparator: '[, ]+',
-                                            remoteDirectory: '',
-                                            remoteDirectorySDF: false,
-                                            removePrefix: '',
-                                            sourceFiles: 'recovery.sh'
-                                        )
-                                    ],
-                                    usePromotionTimestamp: false,
-                                    useWorkspaceInPromotion: false,
-                                    verbose: false
-                                )
-                            ]
-                        )
-                        error("Odoo upgrade failed")
-                    }
-                }
-            }
+        // stage('Backup Database & Odoo Upgrade Module') {
+        //     steps {
+        //         echo "Backup Database"
+        //         script {
+        //             up_modules = ""
+        //             res=sh(script: "python3 upgrade_process.py", returnStdout: true).trim()
+        //             missing_modules = res.split('\n')[0].substring(8)
+        //             up_modules = res.split("\n")[1].substring(7)
+        //             echo "${missing_modules}"
+        //             echo "${up_modules}"
+        //         }
+        //         sshPublisher(
+        //             publishers: [
+        //                 sshPublisherDesc(
+        //                     configName: 'vagrant1',
+        //                     transfers: [
+        //                         sshTransfer(
+        //                             cleanRemote: false,
+        //                             excludes: '',
+        //                             execCommand: 'chmod +x backup.sh && ./backup.sh && rm -f backup.sh',
+        //                             execTimeout: 120000,
+        //                             flatten: false,
+        //                             makeEmptyDirs: false,
+        //                             noDefaultExcludes: false,
+        //                             patternSeparator: '[, ]+',
+        //                             remoteDirectory: '',
+        //                             remoteDirectorySDF: false,
+        //                             removePrefix: '',
+        //                             sourceFiles: 'backup.sh'
+        //                         )
+        //                     ], 
+        //                     usePromotionTimestamp: false,
+        //                     useWorkspaceInPromotion: false,
+        //                     verbose: false
+        //                 )
+        //             ]
+        //         )
+        //         echo "Odoo Upgrade Module"
+        //         script {
+        //             if (missing_modules.isEmpty()){
+        //                 echo "No missing modules"
+        //             }
+        //             else {
+        //                 sh "python3 notification.py approval ${branch} ${Author_ID} ${missing_modules} ${uId} ${env.BUILD_URL} ${ID}"
+        //                 input "Do you want to continue and ignore missing modules?"
+        //             }
+        //             def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/upgrade.sh", returnStdout: true).trim()
+        //             def res = result[-1]
+        //             if (res == '0') {
+        //                 echo "Upgrade module successfully"
+        //             }
+        //             else {
+        //                 sshPublisher(
+        //                     publishers: [
+        //                         sshPublisherDesc(
+        //                             configName: 'vagrant1',
+        //                             transfers: [
+        //                                 sshTransfer(
+        //                                     cleanRemote: false,
+        //                                     excludes: '',
+        //                                     execCommand: 'chmod +x recovery.sh && ./recovery.sh && rm -f recovery.sh',
+        //                                     execTimeout: 120000,
+        //                                     flatten: false,
+        //                                     makeEmptyDirs: false,
+        //                                     noDefaultExcludes: false,
+        //                                     patternSeparator: '[, ]+',
+        //                                     remoteDirectory: '',
+        //                                     remoteDirectorySDF: false,
+        //                                     removePrefix: '',
+        //                                     sourceFiles: 'recovery.sh'
+        //                                 )
+        //                             ],
+        //                             usePromotionTimestamp: false,
+        //                             useWorkspaceInPromotion: false,
+        //                             verbose: false
+        //                         )
+        //                     ]
+        //                 )
+        //                 error("Odoo upgrade failed")
+        //             }
+        //         }
+        //     }
 
             // post {
             //     always {
@@ -225,7 +225,7 @@ pipeline {
             //         }
             //     }
             // }
-        }
+        // }
 
         stage('Push Image') {
             steps {
