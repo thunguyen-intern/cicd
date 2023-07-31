@@ -275,6 +275,7 @@ void deployToHost(host, version, oppositeVersion) {
         sleep(time:10,unit:"SECONDS")
         def result=sh(script: "docker exec ${host.container}_${version} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
         http_code = result.substring(9, 12)
+        
         if (http_code == "200"){
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
