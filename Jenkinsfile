@@ -278,11 +278,11 @@ void deployToHost(host, version, oppositeVersion) {
                 sudo systemctl status nginx
             """
             sleep(time:10,unit:"SECONDS")
-            sh "docker stop ${host.container}_${version} && docker rm ${host.container}_${version} && docker rmi ${cur_image}"
+            sh "docker stop ${host.container}_${version} && docker rm -f ${host.container}_${version} && docker rmi -f ${cur_image}"
         }
         else {
             sh "docker stop ${host.container}_${oppositeVersion}"
-            sh "docker rm ${host.container}_${oppositeVersion}"
+            sh "docker rm -f ${host.container}_${oppositeVersion}"
             sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
         }
     }
