@@ -286,7 +286,7 @@ void deployToHost(host, version, oppositeVersion) {
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             sh """
-                ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
+                sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
                 sudo service nginx reload
             """
             sleep(time:10,unit:"SECONDS")
