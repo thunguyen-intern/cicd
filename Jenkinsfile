@@ -260,9 +260,8 @@ pipeline {
                         println("---------------------------------")
                         // Deploy the same version to all servers
                         hosts.each { host ->
-                            stage("Deploy to ${host.container}") {
-                                agent { label host.agentLabel }
-                                steps {
+                            node(host.agentLabel) {
+                                stage("Deploy to ${host.container}") {
                                     withEnv(["DOCKER_HOST=${host.host}"]) {
                                         deployToHost(host, version, oppositeVersion)
                                     }
