@@ -248,7 +248,7 @@ pipeline {
                         [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
                         [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
-                    def firstServerColor = ''
+                    def first_server_color = ''
                     hosts.each { host ->
                         withEnv(["DOCKER_HOST=${host.host}"]) {
                             sh '''
@@ -258,30 +258,30 @@ pipeline {
                                     echo "No need to create!"
                                 fi
                             '''
-                            def activeColor=sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
-                            if (firstServerColor == '') {
-                                firstServerColor = activeColor
+                            def active_color=sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
+                            if (first_server_color == '') {
+                                first_server_color = active_color
                             }
-                            println firstServerColor
-                            def inactiveColor = (firstServerColor == 'blue') ? 'green' : 'blue'
-                            sh "docker run --name ${firstServerColor} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${firstServerColor} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                            println first_server_color
+                            def inactive_color = (first_server_color == 'blue') ? 'green' : 'blue'
+                            sh "docker run --name ${first_server_color} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${first_server_color} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             sh "sleep 10"
 
-                            def result=sh(script: "docker exec ${firstServerColor} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
+                            def result=sh(script: "docker exec ${first_server_color} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
                             def http_code = result.substring(9, 12)
                             if (http_code == "200"){
-                                def inactiveImg=sh(script: "docker inspect --format='{{.Image}}' ${inactiveColor}", returnStdout: true).trim()
-                                sh "mv /home/vagrant/proxy/${inactiveColor}.conf /home/vagrant/proxy/${inactiveColor}.conf.template"                        
-                                sh "mv /home/vagrant/proxy/${firstServerColor}.conf.template /home/vagrant/proxy/${firstServerColor}.conf"
+                                def inactive_img=sh(script: "docker inspect --format='{{.Image}}' ${inactiveColor}", returnStdout: true).trim()
+                                sh "mv /home/vagrant/proxy/${inactive_color}.conf /home/vagrant/proxy/${inactive_color}.conf.template"                        
+                                sh "mv /home/vagrant/proxy/${first_server_color}.conf.template /home/vagrant/proxy/${first_server_color}.conf"
                                 sh "docker restart nginx"
                                 sh "sleep 10"
-                                sh "docker stop ${inactiveColor}"
-                                sh "docker rm -f ${inactiveColor}"
-                                sh "docker rmi -f ${inactiveImg}"
+                                sh "docker stop ${inactive_color}"
+                                sh "docker rm -f ${inactive_color}"
+                                sh "docker rmi -f ${inactive_img}"
                             }
                             else {
-                                sh "docker stop ${firstServerColor}"
-                                sh "docker rm -f ${firstServerColor}"
+                                sh "docker stop ${first_server_color}"
+                                sh "docker rm -f ${first_server_color}"
                                 sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             }
                         }
