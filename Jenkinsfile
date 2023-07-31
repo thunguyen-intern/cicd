@@ -9,8 +9,7 @@ pipeline {
         DOCKER_IMAGE_NAME = 'odoo_15'
         IMAGE = 'odoo'
         FAILED_STAGE = ''
-        PSQL_CREDENTIALS = credentials('postgres')
-        DATABASE = 'postgres'
+        HOSTS_FILE='/etc/hosts'
     }
 
     stages {
@@ -228,6 +227,37 @@ pipeline {
                     sh "docker push ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                 }
                 
+            }
+        }
+
+        stage('Update Hosts') {
+            steps {
+                script {
+                    def hosts = [
+                        [agentLabel: 'vm1', host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
+                        [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
+                        [agentLabel: 'vm3', host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
+                    ]
+
+                    hosts.each { host ->
+                        node(host.agentLabel) {
+                            withEnv(["DOCKER_HOST=${host.host}"]) {
+                                sh '''
+                                    CONTAINER_NAME=${host.container}
+                                    HOST_NAME=${host.container}
+
+                                    IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_NAME)
+
+                                    if grep -q "$HOST_NAME" "$HOSTS_FILE"; then
+                                        sudo sed -i "/$HOST_NAME/d" $HOSTS_FILE
+                                    fi
+
+                                    echo "$IP $HOST_NAME" | sudo tee -a $HOSTS_FILE
+                                '''
+                            }
+                        }
+                    }
+                }
             }
         }
 
