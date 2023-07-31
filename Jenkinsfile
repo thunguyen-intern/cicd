@@ -249,30 +249,30 @@ pipeline {
                         [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
 
-                    def firstServerVersion = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
-                    def newVersion = (firstServerVersion == 'odoo_blue') ? 'odoo_green' : 'odoo_blue'
+                    def firstServerVersion = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=odoo1\"", returnStdout: true).trim()
+                    def newVersion = (firstServerVersion == 'odoo1_blue') ? 'odoo_green' : 'odoo_blue'
                     println(firstServerVersion)
                     println(newVersion)
                     println("-----------------------------------")
                     hosts.each { host ->
                         withEnv(["DOCKER_HOST=${host.host}"]) {
                             
-                            sh "docker run --name ${newVersion} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${newVersion} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                            sh "docker run --name ${host.container}_${newVersion} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${host.container}_${newVersion} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             sleep(time:10,unit:"SECONDS")
-                            def result=sh(script: "docker exec ${newVersion} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
+                            def result=sh(script: "docker exec ${host.container}_${newVersion} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
                             http_code = result.substring(9, 12)
                             if (http_code == "200"){
                                 println("-----------------------------------")
-                                cur_image=sh(script: "docker inspect --format='{{.Image}}' ${firstServerVersion}", returnStdout: true).trim()
-                                sh "mv /home/vagrant/proxy/${firstServerVersion}.conf /home/vagrant/proxy/${firstServerVersion}.conf.template"
-                                sh "mv /home/vagrant/proxy/${newVersion}.conf.template /home/vagrant/proxy/${newVersion}.conf"
+                                cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${firstServerVersion}", returnStdout: true).trim()
+                                sh "mv /home/vagrant/proxy/${host.container}_${firstServerVersion}.conf /home/vagrant/proxy/${host.container}_${firstServerVersion}.conf.template"
+                                sh "mv /home/vagrant/proxy/${host.container}_${newVersion}.conf.template /home/vagrant/proxy/${host.container}_${newVersion}.conf"
                                 sh "docker restart nginx"
                                 sleep(time:10,unit:"SECONDS")
-                                sh "docker stop ${firstServerVersion} && docker rm ${firstServerVersion} && docker rmi ${cur_image}"
+                                sh "docker stop ${host.container}_${firstServerVersion} && docker rm ${host.container}_${firstServerVersion} && docker rmi ${cur_image}"
                             }
                             else {
-                                sh "docker stop ${newVersion}"
-                                sh "docker rm ${newVersion}"
+                                sh "docker stop ${host.container}_${newVersion}"
+                                sh "docker rm ${host.container}_${newVersion}"
                                 sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             }
                         }
