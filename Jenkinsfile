@@ -258,9 +258,12 @@ pipeline {
                                     echo "No need to create!"
                                 fi
                             '''
-                            def active_color=sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
-                            if (first_server_color == '') {
-                                first_server_color = active_color
+                            if (firstServerColor == '') {
+                                firstServerColor = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim() // Store the color of the first server
+
+                                if (firstServerColor != 'blue' && firstServerColor != 'green') {
+                                    firstServerColor = 'blue' // Default to 'blue' if the color is neither 'blue' nor 'green'
+                                }
                             }
                             println first_server_color
                             def inactive_color = (first_server_color == 'blue') ? 'green' : 'blue'
