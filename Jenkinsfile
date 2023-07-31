@@ -241,19 +241,19 @@ pipeline {
                     hosts.each { host ->
                         node(host.agentLabel) {
                             withEnv(["DOCKER_HOST=${host.host}"]) {
-                                sh '''
-                                    CONTAINER_NAME=${host.container}
-                                    HOST_NAME=${host.container}
-                                    HOSTS_FILE=/etc/hosts
-
-                                    IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_NAME)
-
-                                    if grep -q "$HOST_NAME" "$HOSTS_FILE"; then
-                                        sudo sed -i "/$HOST_NAME/d" $HOSTS_FILE
+                                def containerName = host.container
+                                def hostName = host.container
+                                def hostsFile = "/etc/hosts"
+                                sh """
+                                    CONTAINER_NAME=${containerName}
+                                    HOST_NAME=${hostName}
+                                    HOSTS_FILE=${hostsFile}
+                                    IP=\$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \$CONTAINER_NAME)
+                                    if grep -q "\$HOST_NAME" "\$HOSTS_FILE"; then
+                                        sudo sed -i "/\$HOST_NAME/d" \$HOSTS_FILE
                                     fi
-
-                                    echo "$IP $HOST_NAME" | sudo tee -a $HOSTS_FILE
-                                '''
+                                    echo "\$IP \$HOST_NAME" | sudo tee -a \$HOSTS_FILE
+                                """
                             }
                         }
                     }
