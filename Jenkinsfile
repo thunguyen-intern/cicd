@@ -279,7 +279,7 @@ void deployToHost(host, version, oppositeVersion) {
     withEnv(["DOCKER_HOST=${host.host}"]) {
         sh "docker run --name ${host.container}_${version} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${host.container}_${version} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
         sleep(time:10,unit:"SECONDS")
-        def result=sh(script: "docker exec ${host.container}_${version} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
+        def result=sh(script: "docker exec ${host.container}_${version} curl -v -I localhost:8069/web/database/selector", returnStdout: true).trim()
         http_code = result.substring(9, 12)
         
         if (http_code == "200"){
