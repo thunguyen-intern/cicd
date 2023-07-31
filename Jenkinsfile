@@ -121,7 +121,7 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'vagrant',
+                            configName: 'vagrant1',
                             transfers: [
                                 sshTransfer(
                                     cleanRemote: false,
@@ -162,7 +162,7 @@ pipeline {
                         sshPublisher(
                             publishers: [
                                 sshPublisherDesc(
-                                    configName: 'vagrant',
+                                    configName: 'vagrant1',
                                     transfers: [
                                         sshTransfer(
                                             cleanRemote: false,
