@@ -271,7 +271,7 @@ void deployToHost(host, version, oppositeVersion) {
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             sh """
-                docker run --network odoo --name proxy -v /var/lib/jenkins/workspace/cicd/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
+                docker run --network odoo --name proxy -v /home/vagrant/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
                 sudo systemctl restart nginx
                 sudo systemctl status nginx
