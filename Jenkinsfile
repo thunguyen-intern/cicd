@@ -229,38 +229,6 @@ pipeline {
             }
         }
 
-        stage('Update Hosts') {
-            steps {
-                script {
-                    def hosts = [
-                        [agentLabel: 'vm1', host: 'tcp://192.168.56.11:2375', container: 'odoo1'],
-                        // [agentLabel: 'vm2', host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
-                        [agentLabel: 'vm3', host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
-                    ]
-
-                    hosts.each { host ->
-                        node(host.agentLabel) {
-                            withEnv(["DOCKER_HOST=${host.host}"]) {
-                                def containerName = host.container
-                                def hostName = host.container
-                                def hostsFile = "/etc/hosts"
-                                sh """
-                                    CONTAINER_NAME=${containerName}
-                                    HOST_NAME=${hostName}
-                                    HOSTS_FILE=${hostsFile}
-                                    IP=\$(docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" \$CONTAINER_NAME)
-                                    if grep -q "\$HOST_NAME" "\$HOSTS_FILE"; then
-                                        sudo sed -i "/\$HOST_NAME/d" \$HOSTS_FILE
-                                    fi
-                                    echo "\$IP \$HOST_NAME" | sudo tee -a \$HOSTS_FILE
-                                """
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         stage('Deployment') {
             steps {
                 echo "Deployment"
@@ -275,11 +243,6 @@ pipeline {
                         def firstServerContainer = sh(script: 'docker ps --format "{{.Names}}" --filter "name=odoo1"', returnStdout: true).trim()
                         def version = firstServerContainer.endsWith('_blue') ? 'blue' : 'green'
                         def oppositeVersion = version == 'blue' ? 'green' : 'blue'
-                        println("---------------------------------")
-                        println(firstServerContainer)
-                        println(version)
-                        println(oppositeVersion)
-                        println("---------------------------------")
                         // Deploy the same version to all servers
                         hosts.each { host ->
                             node(host.agentLabel) {
