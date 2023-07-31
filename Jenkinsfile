@@ -248,43 +248,27 @@ pipeline {
                         [host: 'tcp://192.168.56.12:2375', container: 'odoo2'],
                         [host: 'tcp://192.168.56.13:2375', container: 'odoo3'],
                     ]
-                    def firstServerColor = ''
+
+                    def firstServerVersion = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim()
+                    def newVersion = (firstServerVersion == 'odoo_blue') ? 'odoo_green' : 'odoo_blue'
                     hosts.each { host ->
                         withEnv(["DOCKER_HOST=${host.host}"]) {
-                            sh '''
-                                if ! docker network ls | grep -q "odoo"; then
-                                    docker network create -d bridge odoo
-                                else
-                                    echo "No need to create!"
-                                fi
-                            '''
-                            if (firstServerColor == '') {
-                                firstServerColor = sh(script: "docker ps --format \"{{.Names}}\" --filter \"name=${host.container}\"", returnStdout: true).trim() // Store the color of the first server
-
-                                if (firstServerColor != 'blue' && firstServerColor != 'green') {
-                                    firstServerColor = 'blue' // Default to 'blue' if the color is neither 'blue' nor 'green'
-                                }
-                            }
-                            println firstServerColor
-                            def inactive_color = (firstServerColor == 'blue') ? 'green' : 'blue'
-                            sh "docker run --name ${firstServerColor} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${firstServerColor} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
-                            sh "sleep 10"
-
-                            def result=sh(script: "docker exec ${firstServerColor} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()                    
-                            def http_code = result.substring(9, 12)
+                            
+                            sh "docker run --name ${newVersion} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${newVersion} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+                            sleep(time:10,unit:"SECONDS")
+                            def result=sh(script: "docker exec ${newVersion} curl -I localhost:8069/web/database/selector", returnStdout: true).trim()
+                            http_code = result.substring(9, 12)
                             if (http_code == "200"){
-                                def inactive_img=sh(script: "docker inspect --format='{{.Image}}' ${inactiveColor}", returnStdout: true).trim()
-                                sh "mv /home/vagrant/proxy/${inactive_color}.conf /home/vagrant/proxy/${inactive_color}.conf.template"                        
-                                sh "mv /home/vagrant/proxy/${firstServerColor}.conf.template /home/vagrant/proxy/${firstServerColor}.conf"
+                                cur_image=sh(script: "docker inspect --format='{{.Image}}' ${firstServerVersion}", returnStdout: true).trim()
+                                sh "mv /home/vagrant/proxy/${firstServerVersion}.conf /home/vagrant/proxy/${firstServerVersion}.conf.template"
+                                sh "mv /home/vagrant/proxy/${newVersion}.conf.template /home/vagrant/proxy/${newVersion}.conf"
                                 sh "docker restart nginx"
-                                sh "sleep 10"
-                                sh "docker stop ${inactive_color}"
-                                sh "docker rm -f ${inactive_color}"
-                                sh "docker rmi -f ${inactive_img}"
+                                sleep(time:10,unit:"SECONDS")
+                                sh "docker stop ${firstServerVersion} && docker rm ${firstServerVersion} && docker rmi ${cur_image}"
                             }
                             else {
-                                sh "docker stop ${firstServerColor}"
-                                sh "docker rm -f ${firstServerColor}"
+                                sh "docker stop ${newVersion}"
+                                sh "docker rm ${newVersion}"
                                 sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
                             }
                         }
