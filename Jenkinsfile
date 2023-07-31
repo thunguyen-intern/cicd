@@ -271,7 +271,6 @@ void deployToHost(host, version, oppositeVersion) {
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             sh """
-                docker run --network odoo --name ${host.container}_${oppositeVersion} -d ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}
                 docker run --network odoo --name proxy -v /var/lib/jenkins/workspace/cicd/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
                 sudo systemctl restart nginx
@@ -284,6 +283,7 @@ void deployToHost(host, version, oppositeVersion) {
             sh "docker stop ${host.container}_${oppositeVersion}"
             sh "docker rm -f ${host.container}_${oppositeVersion}"
             sh "docker rmi -f ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+            error "Deployment stage failed"
         }
     }
 }
