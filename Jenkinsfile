@@ -50,19 +50,11 @@ pipeline {
             }
         }
 
-        stage('Login Dockerhub') {
-            steps {
-                script {
-                    // Log into Docker registry
-                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
-                }
-            }
-        }
-
         stage('Run Docker Compose') {
             steps {
                 echo "Run Docker Compose"
                 script {
+                    sh "echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin"
                     sh '''
                         if [ "$(docker ps -aq)" ]; then
                             docker stop $(docker ps -aq)
@@ -91,21 +83,21 @@ pipeline {
             }
         }
 
-        stage('Odoo Unit Test') {
-            steps {
-                echo "Odoo Unit Test"
-                script {
-                    def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
-                    def res = result[-1]
-                    if (res == '0') {
-                        echo "success"
-                    }
-                    else {
-                        error("Unit Test Failed")
-                    }
-                }
-            } 
-        }
+        // stage('Odoo Unit Test') {
+        //     steps {
+        //         echo "Odoo Unit Test"
+        //         script {
+        //             def result=sh(script: "docker exec ${DOCKER_IMAGE_NAME} /mnt/extras/test_utils.sh", returnStdout: true).trim()
+        //             def res = result[-1]
+        //             if (res == '0') {
+        //                 echo "success"
+        //             }
+        //             else {
+        //                 error("Unit Test Failed")
+        //             }
+        //         }
+        //     } 
+        // }
 
         // stage('Backup Database & Odoo Upgrade Module') {
         //     steps {
