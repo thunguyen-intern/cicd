@@ -249,7 +249,7 @@ pipeline {
                                 stage("Deploy to ${host.container}") {
                                     sh "docker volume create --name Filestore"
                                     withEnv(["DOCKER_HOST=${host.host}"]) {
-                                        deployToHost(host, version, oppositeVersion)
+                                        deployToHost(host, version, oppositeVersion, firstServerContainer)
                                     }
                                 }
                             }
@@ -261,7 +261,7 @@ pipeline {
     }
 }
 
-void deployToHost(host, version, oppositeVersion) {
+void deployToHost(host, version, oppositeVersion, firstServerContainer) {
     withEnv(["DOCKER_HOST=${host.host}"]) {
         sh """docker run --name ${host.container}_${version} -v Filestore:/home/odoo/.local/share/Odoo -h ${host.container}_${version} --volumes-from ${firstServerContainer} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"""
         sleep(time:10,unit:"SECONDS")
