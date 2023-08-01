@@ -272,7 +272,7 @@ void deployToHost(host, version, oppositeVersion) {
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             println("---------------------------------")
             // sh """docker exec --privileged=true -u root ${host.container}_${version} sh -c \"apt-get install -y nfs-common && showmount -e odoo_data && mount -t nfs -o nolock odoo_data:/opt/odoo/.local/share/Odoo/ /home/odoo/.local/share/Odoo/\""""
-            sh """docker exec --privileged=true -u root ${host.container}_${version} sh -c \"apt-get install -y nfs-common && showmount -e 192.168.56.11 && mount -t nfs -o nolock 192.168.56.11:/opt/odoo/.local/share/Odoo/ /home/odoo/.local/share/Odoo/\""""
+            sh """docker exec --privileged=true -u root ${host.container}_${version} sh -c \"apt-get install -y nfs-common && showmount -e 192.168.56.10 && mount -t nfs -o nolock 192.168.56.10:/mnt/data/ /home/odoo/.local/share/Odoo/\""""
             sh """
                 docker run --network odoo --name proxy -v /home/vagrant/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
