@@ -263,7 +263,7 @@ pipeline {
 
 void deployToHost(host, version, oppositeVersion, firstServerContainer) {
     withEnv(["DOCKER_HOST=${host.host}"]) {
-        sh """docker run --name ${host.container}_${version} -v Filestore:/home/odoo/.local/share/Odoo -h ${host.container}_${version} --volumes-from ${firstServerContainer} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"""
+        sh """docker run --name ${host.container}_${version} -v Filestore:/home/odoo/.local/share/Odoo -h ${host.container}_${version} -d --volumes-from ${firstServerContainer} --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"""
         sleep(time:10,unit:"SECONDS")
         def result=sh(script: "docker exec ${host.container}_${version} curl -v -I localhost:8069/web/database/selector", returnStdout: true).trim()
         http_code = result.substring(9, 12)
