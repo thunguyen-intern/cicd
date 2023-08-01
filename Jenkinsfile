@@ -270,6 +270,7 @@ void deployToHost(host, version, oppositeVersion) {
         if (http_code == "200"){
             println("---------------------------------")
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
+            sh """docker run -it --privileged=true ${host.container}_${oppositeVersion} bash -c "apt-get install -y nfs-utils ; mount -t nfs odoo_data:/opt/odoo/.local/share/Odoo/ -o nolock ; showmount odoo_data"""
             sh """
                 docker run --network odoo --name proxy -v /home/vagrant/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
