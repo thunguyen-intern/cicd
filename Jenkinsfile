@@ -247,6 +247,7 @@ pipeline {
                         hosts.each { host ->
                             node(host.agentLabel) {
                                 stage("Deploy to ${host.container}") {
+                                    sh "docker volume create --name Filestore"
                                     withEnv(["DOCKER_HOST=${host.host}"]) {
                                         deployToHost(host, version, oppositeVersion)
                                     }
@@ -262,7 +263,7 @@ pipeline {
 
 void deployToHost(host, version, oppositeVersion) {
     withEnv(["DOCKER_HOST=${host.host}"]) {
-        sh "docker run --name ${host.container}_${version} -v /home/vagrant/server/Odoo:/home/odoo/.local/share/Odoo -h ${host.container}_${version} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"
+        sh """docker run --name ${host.container}_${version} -v Filestore:/home/odoo/.local/share/Odoo -h ${host.container}_${version} --volumes-from ${firstServerContainer} -d --network=odoo ${DOCKERHUB_CREDENTIALS_USR}/${IMAGE}:${ID}"""
         sleep(time:10,unit:"SECONDS")
         def result=sh(script: "docker exec ${host.container}_${version} curl -v -I localhost:8069/web/database/selector", returnStdout: true).trim()
         http_code = result.substring(9, 12)
@@ -272,7 +273,7 @@ void deployToHost(host, version, oppositeVersion) {
             cur_image=sh(script: "docker inspect --format='{{.Image}}' ${host.container}_${version}", returnStdout: true).trim()
             println("---------------------------------")
             // sh """docker exec --privileged=true -u root ${host.container}_${version} sh -c \"apt-get install -y nfs-common && showmount -e odoo_data && mount -t nfs -o nolock odoo_data:/opt/odoo/.local/share/Odoo/ /home/odoo/.local/share/Odoo/\""""
-            sh """docker exec --privileged=true -u root ${host.container}_${version} sh -c \"apt-get install -y nfs-common && showmount -e 192.168.56.10 && mount -t nfs -o nolock 192.168.56.10:/mnt/data/ /home/odoo/.local/share/Odoo/\""""
+            
             sh """
                 docker run --network odoo --name proxy -v /home/vagrant/nginx/default.conf:/etc/nginx/conf.d/default.conf -d nginx
                 sudo ln -sf /home/vagrant/proxy/${host.container}_${oppositeVersion}.conf /etc/nginx/conf.d/${host.container}.conf
