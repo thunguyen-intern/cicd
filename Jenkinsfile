@@ -244,6 +244,13 @@ pipeline {
                         def version = firstServerContainer.endsWith('_blue') ? 'blue' : 'green'
                         def oppositeVersion = version == 'blue' ? 'green' : 'blue'
                         // Deploy the same version to all servers
+                        sh '''
+                                if ! docker network ls | grep -q "odoo"; then
+                                    docker network create -d bridge odoo
+                                else
+                                    echo "No need to create!"
+                                fi
+                            '''
                         hosts.each { host ->
                             node(host.agentLabel) {
                                 stage("Deploy to ${host.container}") {
